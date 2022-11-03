@@ -42,7 +42,6 @@ error_loop:
 	jmp error_loop
 
 	#include "print16.S"
-	#include "itoa.S"
 	#include "drive.S"
 
 banner_msg:
