@@ -9,6 +9,27 @@ GDT_descriptor:
 	.word GDT_descriptor - GDT - 1
 	.long GDT
 pmode_switch:
+	# save the cursor position to resume there in 32 bits
+	call cursor_get
+	push %ax
+	push %cx
+
+	# offset by the row value
+	xor %ah, %ah
+	mov %dh, %al
+	mov $80, %cx
+	mul %cx
+
+	#offset by the column value
+	xor %dh, %dh
+	shl $1, %dl
+	add %dx, %ax
+
+	#save calculated offset
+	mov %ax, (fb_offset)
+	pop %cx
+	pop %ax
+
 	cli
 	lgdt (GDT_descriptor)
 	mov %cr0, %eax
