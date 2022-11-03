@@ -1,4 +1,4 @@
-CFLAGS=-m32 -fno-pie
+CFLAGS=-m32 -fno-pie -Wall -Wextra -pedantic
 ASFLAGS=${CFLAGS}
 LDFLAGS=--oformat binary -Ttext 0x7c00 --nmagic -m elf_i386
 BOOT_IMAGE=boot.img
