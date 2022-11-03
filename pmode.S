@@ -48,9 +48,11 @@ loop32:
 
 	.globl print_banner32
 print_banner32:
+	pusha
 	push $banner32_msg
 	call print_str32
-	pop %eax
+	add $4, %esp
+	popa
 	ret
 
 banner32_msg:

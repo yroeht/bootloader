@@ -45,10 +45,7 @@ print_char32_exit:
 	ret
 	.globl print_str32
 print_str32:
-	push %esi
-	mov 8(%esp), %esi
-	push %eax
-	push %ecx
+	mov 4(%esp), %esi
 print_str32_loop:
 	mov $1, %ecx
 	lodsb
@@ -57,21 +54,17 @@ print_str32_loop:
 	call print_char32
 	jmp print_str32_loop
 print_str32_exit:
-	pop %ecx
-	pop %eax
-	pop %esi
 	ret
 
 	.globl print_hex32
 print_hex32:
-	push %ecx
-	mov 8(%esp), %ecx
-	push %eax
-	push %ebx
-	push %esi
+	mov 4(%esp), %ecx
+
+	pusha
 	push $hex_prefix
 	call print_str32
-	pop %eax
+	add $4, %esp
+	popa
 
 	mov $hex, %ebx
 
@@ -122,8 +115,4 @@ print_hex32:
 	mov (%ebx,%esi,1), %al
 	call print_char32
 
-	pop %esi
-	pop %ebx
-	pop %eax
-	pop %ecx
 	ret
