@@ -101,15 +101,17 @@ print_char32_exit:
 	ret
 	.globl print_str32
 print_str32:
+	mov 4(%esp), %esi
 	push %eax
-	mov 8(%esp), %esi
+	push %ecx
+	mov $1, %ecx
 print_str32_loop:
-	mov (%esi), %al
+	lodsb
 	test %al, %al
 	jz print_str32_exit
 	call print_char32
-	inc %si
 	jmp print_str32_loop
 print_str32_exit:
+	pop %ecx
 	pop %eax
 	ret
