@@ -9,6 +9,8 @@ drive_num:
 _start:
 	cld
 
+	call clear
+
 	mov %dl, (drive_num)
 	mov $banner_msg, %si
 	call print_string

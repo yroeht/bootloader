@@ -30,6 +30,8 @@ pmode_switch:
 	pop %cx
 	pop %ax
 
+	call invisible_cursor
+
 	cli
 	lgdt (GDT_descriptor)
 	mov %cr0, %eax

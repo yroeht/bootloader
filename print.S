@@ -59,3 +59,30 @@ newline:
 	call print_char
 	ret
 
+clear:
+	push %ax
+	push %cx
+	push %dx
+	xor %al, %al
+	xor %cx, %cx
+	mov $24, %dh
+	mov $80, %dl
+	mov $7, %bh
+	mov $7, %ah
+	int $0x10
+	xor %dx, %dx
+	call cursor_set
+	pop %dx
+	pop %cx
+	pop %ax
+	ret
+
+invisible_cursor:
+	push %ax
+	push %cx
+	mov $0x2607, %cx
+	mov $1, %ah
+	int $0x10
+	pop %cx
+	pop %ax
+	ret
