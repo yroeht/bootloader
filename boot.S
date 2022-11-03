@@ -52,8 +52,9 @@ error_msg:
 bootsect_str:
 	.string "Our first sector's magic number is "
 
+	.global number_extra_sectors
 number_extra_sectors:
-	.byte 0x1
+	.byte 0x3
 mem_start:
 	.word 0x7c00
 

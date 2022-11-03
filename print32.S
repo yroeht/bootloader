@@ -45,11 +45,12 @@ print_char32_exit:
 	ret
 	.globl print_str32
 print_str32:
-	mov 4(%esp), %esi
+	push %esi
+	mov 8(%esp), %esi
 	push %eax
 	push %ecx
-	mov $1, %ecx
 print_str32_loop:
+	mov $1, %ecx
 	lodsb
 	test %al, %al
 	jz print_str32_exit
@@ -58,4 +59,71 @@ print_str32_loop:
 print_str32_exit:
 	pop %ecx
 	pop %eax
+	pop %esi
+	ret
+
+	.globl print_hex32
+print_hex32:
+	push %ecx
+	mov 8(%esp), %ecx
+	push %eax
+	push %ebx
+	push %esi
+	push $hex_prefix
+	call print_str32
+	pop %eax
+
+	mov $hex, %ebx
+
+	mov %ecx, %esi
+	and $0xf0000000, %esi
+	shr $28, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	mov %ecx, %esi
+	and $0xf000000, %esi
+	shr $24, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	mov %ecx, %esi
+	and $0xf00000, %esi
+	shr $20, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	mov %ecx, %esi
+	and $0xf0000, %esi
+	shr $16, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	mov %ecx, %esi
+	and $0xf000, %esi
+	shr $12, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	mov %ecx, %esi
+	and $0xf00, %esi
+	shr $8, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	mov %ecx, %esi
+	and $0xf0, %esi
+	shr $4, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	mov %ecx, %esi
+	and $0xf, %esi
+	mov (%ebx,%esi,1), %al
+	call print_char32
+
+	pop %esi
+	pop %ebx
+	pop %eax
+	pop %ecx
 	ret
