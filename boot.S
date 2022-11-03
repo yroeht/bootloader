@@ -7,6 +7,8 @@ drive_num:
 	.text
 
 _start:
+	cld
+
 	mov %dl, (drive_num)
 	mov $banner_msg, %si
 	call print_string

@@ -37,14 +37,17 @@ cursor_get:
 print_string:
 	push %si
 	push %ax
+	push %cx
 print_string_loop:
-	mov (%si), %al
+	# strlen is unknown so iterate byte by byte until null
+	mov $1, %cx
+	lodsb
 	test %al, %al
 	jz print_string_exit
 	call print_char
-	inc %si
-	ja print_string_loop
+	jmp print_string_loop
 print_string_exit:
+	pop %cx
 	pop %ax
 	pop %si
 	ret
