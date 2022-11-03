@@ -1,5 +1,7 @@
+	.code32
 fb:
 	.long 0xb8000
+	.globl fb_offset
 fb_offset:
 	.long 0
 columns:

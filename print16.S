@@ -21,6 +21,7 @@ cursor_set:
 	pop %ax
 	ret
 
+	.globl cursor_get
 cursor_get:
 	push %ax
 	push %bx
@@ -77,6 +78,7 @@ clear:
 	pop %ax
 	ret
 
+	.globl invisible_cursor
 invisible_cursor:
 	push %ax
 	push %cx
@@ -87,8 +89,11 @@ invisible_cursor:
 	pop %ax
 	ret
 
+	.globl hex_prefix
 hex_prefix:
 	.string "0x"
+
+	.globl hex
 hex:
 	.string "0123456789abcdef"
 itoa_hex:

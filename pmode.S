@@ -1,3 +1,4 @@
+	.code16
 GDT:
 	.long 0
 	.long 0
@@ -8,6 +9,8 @@ GDT:
 GDT_descriptor:
 	.word GDT_descriptor - GDT - 1
 	.long GDT
+
+	.globl pmode_switch
 pmode_switch:
 	# save the cursor position to resume there in 32 bits
 	call cursor_get

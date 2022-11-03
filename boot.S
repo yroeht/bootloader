@@ -1,12 +1,6 @@
 	.code16
-	.globl _start
-
-drive_num:
-	.byte
-
 	.text
 
-_start:
 	cld
 
 	call clear
@@ -57,7 +51,9 @@ number_extra_sectors:
 mem_start:
 	.word 0x7c00
 
+	.globl drive_num
+drive_num:
+	.byte
+
 	.org 510, 0
 	.short 0xaa55
-	#include "pmode.S"
-	#include "print32.S"
