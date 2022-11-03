@@ -41,7 +41,7 @@ error:
 error_loop:
 	jmp error_loop
 
-	#include "print.S"
+	#include "print16.S"
 	#include "itoa.S"
 	#include "drive.S"
 
@@ -60,3 +60,4 @@ mem_start:
 	.org 510, 0
 	.short 0xaa55
 	#include "pmode.S"
+	#include "print32.S"
