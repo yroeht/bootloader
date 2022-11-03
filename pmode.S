@@ -39,12 +39,17 @@ pmode_switch:
 
 	.code32
 start32:
-	mov $banner32_msg, %si
-	call print_str32
-	mov $banner32_msg, %si
-	call print_str32
+	call print_banner32
+	call kernel_entry
 loop32:
 	jmp loop32
+
+	.globl print_banner32
+print_banner32:
+	push $banner32_msg
+	call print_str32
+	pop %eax
+	ret
 
 banner32_msg:
 	.string "Welcome to 32 bits Protected Mode!\r\n"
@@ -94,10 +99,12 @@ print_char32_exit:
 	pop %ebx
 	pop %eax
 	ret
+	.globl print_str32
 print_str32:
 	push %eax
+	mov 8(%esp), %esi
 print_str32_loop:
-	mov (%si), %al
+	mov (%esi), %al
 	test %al, %al
 	jz print_str32_exit
 	call print_char32
