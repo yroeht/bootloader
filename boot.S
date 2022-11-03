@@ -1,6 +1,7 @@
 	.code16
 	.text
-
+	.globl _start
+_start:
 	cld
 
 	call clear
