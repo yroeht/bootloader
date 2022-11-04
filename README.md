@@ -13,7 +13,3 @@ Toy bootloader and kernel in x86 assembly
 6. ...
 7. Load an ELF and execute it (TODO)
 7. Load another ELF and execute it too (TODO)
-
-## TODO
-
-Write some of this in C.
