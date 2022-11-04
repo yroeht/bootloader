@@ -1,15 +1,4 @@
 	.code16
-GDT:
-	.long 0
-	.long 0
-	.long 0x0000ffff
-	.long 0x00cf9a00
-	.long 0x0000ffff
-	.long 0x00cf8200
-GDT_descriptor:
-	.word GDT_descriptor - GDT - 1
-	.long GDT
-
 	.globl pmode_switch
 pmode_switch:
 	# save the cursor position to resume there in 32 bits
@@ -35,21 +24,20 @@ pmode_switch:
 
 	call invisible_cursor
 
-	cli
-	lgdt (GDT_descriptor)
-	mov %cr0, %eax
-	or $1, %al
-	mov %eax, %cr0
-	ljmp $0x08, $start32
+	call init_gdt
 
 	.code32
+	.globl start32
 start32:
+	mov (kernel_cs), %eax
+	mov %eax, %ds
+	mov %eax, %ss
+	mov %eax, %es
+	mov %eax, %fs
+	mov %eax, %gs
 	call print_banner32
 	call kernel_entry
-loop32:
-	jmp loop32
 
-	.globl print_banner32
 print_banner32:
 	push $banner32_msg
 	call print_str32
