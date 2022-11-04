@@ -2,27 +2,7 @@
 	.globl pmode_switch
 pmode_switch:
 	# save the cursor position to resume there in 32 bits
-	call cursor_get
-	push %ax
-	push %cx
-
-	# offset by the row value
-	xor %ah, %ah
-	mov %dh, %al
-	mov $80, %cx
-	mul %cx
-
-	#offset by the column value
-	xor %dh, %dh
-	shl $1, %dl
-	add %dx, %ax
-
-	#save calculated offset
-	mov %ax, (fb_offset)
-	pop %cx
-	pop %ax
-
-	call invisible_cursor
+	call cursor_save
 
 	call init_gdt
 
@@ -46,4 +26,30 @@ print_banner32:
 
 banner32_msg:
 	.string "Welcome to 32 bits Protected Mode!\r\n"
+
+	.code16
+cursor_save:
+	call cursor_get
+	push %ax
+	push %cx
+
+	# offset by the row value
+	xor %ah, %ah
+	mov %dh, %al
+	mov $80, %cx
+	mul %cx
+
+	#offset by the column value
+	xor %dh, %dh
+	shl $1, %dl
+	add %dx, %ax
+
+	#save calculated offset
+	mov %ax, (fb_offset)
+	pop %cx
+	pop %ax
+
+	call invisible_cursor
+
+	ret
 
