@@ -2,6 +2,7 @@
 
 #include "stdint.h"
 
+void printk(const char *fmt, ...);
 void print_string(const char *s);
 void print_hex(int x);
 void reset_colorcode(void);

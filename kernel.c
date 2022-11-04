@@ -9,6 +9,8 @@ void kernel_entry(void)
 	print_string("Loaded ");
 	print_hex(number_extra_sectors);
 	print_string(" extra sectors after bootsector.\r\n");
+	printk("%s: T%sing %s %a(%%s and %%p): %p.",
+			__func__, "est", "printf", 42);
 	for (;;)
 		continue;
 }

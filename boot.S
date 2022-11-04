@@ -48,7 +48,7 @@ bootsect_str:
 
 	.global number_extra_sectors
 number_extra_sectors:
-	.byte 0x3
+	.byte 0x4
 mem_start:
 	.word 0x7c00
 

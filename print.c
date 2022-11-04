@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "print.h"
 
 int framebuffer_idx;
@@ -23,16 +24,18 @@ static void print_char(char c)
 	}
 	if ('\n' == c) {
 		framebuffer_idx += columns;
-		// if this newline is out of screen, scroll
-		if (framebuffer_idx / columns >= rows) {
-			for (int i = 0; i < framebuffer_idx; ++i) {
-				framebuffer[i] = framebuffer[i + columns];
-			}
-			framebuffer_idx -= columns;
-		}
 		return;
 	}
-	framebuffer[framebuffer_idx++] = (framebuffer_color.byte << 8) | c;
+	framebuffer[framebuffer_idx] = (framebuffer_color.byte << 8) | c;
+
+	// if this newline is out of screen, scroll
+	if (framebuffer_idx / columns >= rows) {
+		for (int i = 0; i < framebuffer_idx; ++i) {
+			framebuffer[i] = framebuffer[i + columns];
+		}
+		framebuffer_idx -= columns;
+	}
+	framebuffer_idx++;
 }
 
 void print_string(const char *s)
@@ -47,4 +50,32 @@ void print_hex(int x)
 	const int nibbles = 2 * sizeof x;
 	for (int i = nibbles - 1; i >= 0; --i)
 		print_char("0123456789abcdef"[((x >> (4 * i)) & 0xf)]);
+}
+
+void printk(const char *fmt, ...)
+{
+	va_list ap;
+	int possible_arg = 0;
+	va_start(ap, fmt);
+	while (*fmt)
+	{
+		if (possible_arg)
+		{
+			if ('s' == *fmt)
+				print_string(va_arg(ap, char *));
+			if ('p' == *fmt)
+				print_hex(va_arg(ap, int));
+			if ('%' == *fmt)
+				print_char('%');
+			possible_arg = 0;
+			++fmt;
+			continue;
+		}
+		if ('%' == *fmt)
+			possible_arg = 1;
+		else
+			print_char(*fmt);
+		++fmt;
+	}
+	va_end(ap);
 }
