@@ -1,6 +1,6 @@
-# bootloader
+# Kernel and bootloader
 
-Toy bootloader and kernel in x86 assembly
+Toy kernel and bootloader in x86 assembly
 
 ## Steps
 
