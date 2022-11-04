@@ -1,5 +1,6 @@
-typedef unsigned char u8;
-typedef unsigned short u16;
+#pragma once
+
+#include "stdint.h"
 
 union gdt_entry
 {

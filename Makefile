@@ -4,10 +4,10 @@ ASFLAGS=${CFLAGS}
 LDFLAGS=--oformat binary -Ttext 0x7c00 --nmagic -m elf_i386
 BOOT_IMAGE=boot.img
 
-C_SOURCE=kernel.c
+C_SOURCE=kernel.c \
+	 print.c \
 
 ASM_SOURCE=boot.S \
-	   print32.S \
 	   pmode.S \
 
 C_OBJ= $(C_SOURCE:.c=.o gdt.o)

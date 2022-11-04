@@ -20,7 +20,7 @@ start32:
 
 print_banner32:
 	push $banner32_msg
-	call print_str32
+	call print_string
 	add $4, %esp
 	ret
 
@@ -45,7 +45,7 @@ cursor_save:
 	add %dx, %ax
 
 	#save calculated offset
-	mov %ax, (fb_offset)
+	mov %ax, (framebuffer_idx)
 	pop %cx
 	pop %ax
 
