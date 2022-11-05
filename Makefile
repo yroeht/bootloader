@@ -6,11 +6,13 @@ BOOT_IMAGE=boot.img
 
 C_SOURCE=kernel.c \
 	 print.c \
+	 idt.c \
+	 isr.c \
 
 ASM_SOURCE=boot.S \
 	   pmode.S \
 
-C_OBJ= $(C_SOURCE:.c=.o gdt.o)
+C_OBJ= $(C_SOURCE:.c=.o gdt.o isr.o)
 
 ASM_OBJ= $(ASM_SOURCE:.S=.o)
 
@@ -22,6 +24,9 @@ ${BOOT_IMAGE}: ${ASM_OBJ} ${C_OBJ}
 
 gdt.o:gdt.c
 	${CC} -m16 ${COMMON_FLAGS}   -c -o $@ $^
+
+isr.o:isr.c
+	${CC} -mgeneral-regs-only ${CFLAGS}   -c -o $@ $^
 
 debug: ${BOOT_IMAGE}
 	qemu-system-i386 -fda ${BOOT_IMAGE} -s -S
