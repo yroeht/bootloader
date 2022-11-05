@@ -1,4 +1,4 @@
-COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic
+COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector
 CFLAGS=-m32 ${COMMON_FLAGS}
 ASFLAGS=${CFLAGS}
 LDFLAGS=--oformat binary -Ttext 0x7c00 --nmagic -m elf_i386
