@@ -69,3 +69,7 @@ struct gdt_descriptor
 	short size;
 	long address;
 } __attribute__((__packed__));
+
+extern const short kernel_cs;
+extern const short kernel_ds;
+

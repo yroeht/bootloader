@@ -9,13 +9,12 @@ struct interrupt_frame
     int ss;
 };
 
-void default_interrupt_handler(struct interrupt_frame *frame);
-
-#define DEFAULT_ISR(n)                                               \
+#define ISR(n, str, has_error, is_excn)                        \
 void interrupt_handler##n(struct interrupt_frame *frame);      \
 
-#include "default-isr-nums.inc"
+#include "isr-list.inc"
 
-#undef DEFAULT_ISR
+#undef ISR
+
 
 

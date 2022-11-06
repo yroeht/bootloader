@@ -3,14 +3,19 @@
 pmode_switch:
 	# save the cursor position to resume there in 32 bits
 	call cursor_save
-
 	call init_gdt
+
 	.code32
-start32_aux:
-	ret
 	.globl start32
 start32:
-	call start32_aux
+	mov kernel_ds, %eax
+	mov %eax, %ds
+	mov %eax, %es
+	mov %eax, %fs
+	mov %eax, %gs
+	mov %eax, %ss
+	mov $0x00ffffff, %ebp
+	mov %ebp, %esp
 	call kernel_entry
 loop:
 	jmp loop
@@ -24,12 +29,11 @@ cursor_save:
 	# offset by the row value
 	xor %ah, %ah
 	mov %dh, %al
-	mov $80, %cx
-	mul %cx
+	mov $80, %cl
+	mul %cl
 
 	#offset by the column value
 	xor %dh, %dh
-	shl $1, %dl
 	add %dx, %ax
 
 	#save calculated offset
