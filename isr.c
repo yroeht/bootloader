@@ -12,9 +12,7 @@ void interrupt_handler##n(struct interrupt_frame *frame)       \
 		printk("%s err=%p\r\n", str, frame->err);      \
 	else                                                   \
 		printk("%s\r\n", str);                         \
-	asm volatile("mov $0x20, %%al": : : "al");             \
-	asm volatile("outb %%al, $0x20": : : "al");            \
-	asm volatile("outb %%al, $0xa0": : : "al");            \
+	pic_ack();                                             \
 }                                                              \
 
 #include "isr-list.inc"
@@ -63,9 +61,7 @@ void keyboard_handler(struct interrupt_frame *frame)
 	asm volatile("inb $0x60, %%al" : : : "al");
 	asm volatile("mov %%al, %0" : "=m"(keycode));
 
-	asm volatile("mov $0x20, %%al": : : "al");
-	asm volatile("outb %%al, $0x20": : : "al");
-	asm volatile("outb %%al, $0xa0": : : "al");
+	pic_ack();
 
 	switch (keycode)
 	{
