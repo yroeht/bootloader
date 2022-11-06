@@ -4,8 +4,7 @@ extern long start32;
 
 union gdt_entry gdt[segment_gdt_idx_max];
 struct gdt_descriptor gdt_descriptor;
-const short kernel_cs = kernel_code * sizeof (union gdt_entry);
-const short kernel_ds = kernel_data * sizeof (union gdt_entry);
+const char kernel_ds = kernel_data * sizeof (union gdt_entry);
 
 void init_gdt(void)
 {

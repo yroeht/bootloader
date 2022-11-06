@@ -3,8 +3,9 @@
 #include "isr.h"
 
 static struct gate_descriptor idt[256];
-
 static struct idt_descriptor idt_descriptor;
+
+static const short kernel_cs = kernel_code * sizeof (union gdt_entry);
 
 void init_idt(void)
 {
@@ -13,10 +14,9 @@ void init_idt(void)
 	     (int)interrupt_handler##n & 0xffff;               \
 	idt[n].segment_selector = kernel_cs;                   \
 	idt[n].reserved0 = 0;                                  \
-	if (is_excn)                                           \
-		idt[n].gate_type = is_excn                     \
+	idt[n].gate_type = is_excn                             \
 			? gate_type_32bit_trap                 \
-		 	: gate_type_32bit_int;                 \
+			: gate_type_32bit_int;                 \
 	idt[n].reserved1 = 0;                                  \
 	idt[n].dpl = 0;                                        \
 	idt[n].present = 1;                                    \
@@ -26,6 +26,17 @@ void init_idt(void)
 #include "isr-list.inc"
 
 #undef ISR
+
+	idt[65].offset_lo =
+		(int)keyboard_handler & 0xffff;
+	idt[65].segment_selector = kernel_cs;
+	idt[65].reserved0 = 0;
+	idt[65].gate_type = gate_type_32bit_int;
+	idt[65].reserved1 = 0;
+	idt[65].dpl = 0;
+	idt[65].present = 1;
+	idt[65].offset_hi =
+		(int)keyboard_handler >> 16;
 
 	idt_descriptor.size = sizeof (struct idt_descriptor)
 		* sizeof idt - 1;
