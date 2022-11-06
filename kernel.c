@@ -1,7 +1,9 @@
 #include "print.h"
 #include "idt.h"
 
-extern char number_extra_sectors;
+extern short number_extra_sectors;
+
+extern void init_pic(void);
 
 void kernel_entry(void)
 {
@@ -12,8 +14,9 @@ void kernel_entry(void)
 	print_string(" extra sectors after bootsector.\r\n");
 	printk("%s: T%sing %s %a(%%s and %%p): %p\r\n",
 			__func__, "est", "printf", 42);
+	init_pic();
 	init_idt();
-	asm volatile ("int $0x80");
+	asm volatile ("int $0x1");
 	for (;;)
 		continue;
 }

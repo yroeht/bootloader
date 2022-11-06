@@ -5,27 +5,15 @@ pmode_switch:
 	call cursor_save
 
 	call init_gdt
-
 	.code32
+start32_aux:
+	ret
 	.globl start32
 start32:
-	mov (kernel_cs), %eax
-	mov %eax, %ds
-	mov %eax, %ss
-	mov %eax, %es
-	mov %eax, %fs
-	mov %eax, %gs
-	call print_banner32
+	call start32_aux
 	call kernel_entry
-
-print_banner32:
-	push $banner32_msg
-	call print_string
-	add $4, %esp
-	ret
-
-banner32_msg:
-	.string "Welcome to 32 bits Protected Mode!\r\n"
+loop:
+	jmp loop
 
 	.code16
 cursor_save:

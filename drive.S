@@ -6,16 +6,12 @@ init_drive:
 	pop %dx
 	ret
 
-	# read %al sectors
+	# read one sector
 read_sector:
-	push %dx
-	xor %dx, %dx
-	xor %ah, %ah
-	mov %dx, %es
-	mov (drive_num), %dl
-	mov $0x02, %ah # int
-	mov $0x0002, %cx # cylinder and sector number
+	push %ax
+	test %al, %al
+	mov $0x0201, %ax
 	int $0x13
-	pop %dx
+	pop %ax
 	ret
 

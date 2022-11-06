@@ -2,11 +2,16 @@
 
 extern long start32;
 
-union gdt_entry gdt[segment_gdt_idx_max - 1];
-struct gdt_descriptor gdt_descriptor;
+union gdt_entry gdt[segment_gdt_idx_max]
+	__attribute__((section(".bits16")));
+struct gdt_descriptor gdt_descriptor
+	__attribute__((section(".bits16")));
 
-const short kernel_cs = 0x10;
+const short kernel_ds
+	__attribute__((section(".bits16.rodata")))
+= 0x10;
 
+__attribute__((section(".bits16.code")))
 void init_gdt(void)
 {
 	gdt[null].w1 = 0;
@@ -56,5 +61,13 @@ void init_gdt(void)
 	asm volatile("mov %%cr0, %%eax" :);
 	asm volatile("or $1, %%al" :);
 	asm volatile("mov %%eax, %%cr0" :);
+	asm volatile("mov $0x10, %%eax" :);
+	asm volatile("mov %%eax, %%ds" :);
+	asm volatile("mov %%eax, %%es" :);
+	asm volatile("mov %%eax, %%fs" :);
+	asm volatile("mov %%eax, %%gs" :);
+	asm volatile("mov %%eax, %%ss" :);
+	asm volatile("mov $0x00ffffff, %%ebp" :);
+	asm volatile("mov %%ebp, %%esp" :);
 	asm volatile("ljmp $0x08, $%0" : : "m"(start32));
 }

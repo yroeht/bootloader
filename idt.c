@@ -8,22 +8,28 @@ static struct idt_descriptor idt_descriptor;
 
 void init_idt(void)
 {
-	for (unsigned i = 0; i < sizeof idt; ++i)
-	{
-		idt[i].offset_lo =
-			(int)default_interrupt_handler & 0xffff;
-		idt[i].segment_selector =
-			kernel_code * sizeof (union gdt_entry);
-		idt[i].reserved0 = 0;
-		idt[i].gate_type = gate_type_32bit_int;
-		idt[i].reserved1 = 0;
-		idt[i].dpl = 0;
-		idt[i].present = 1;
-		idt[i].offset_hi =
-			(int)default_interrupt_handler >> 16;
-	}
-	idt_descriptor.size = sizeof idt - 1;
+
+#define DEFAULT_ISR(n) \
+	idt[n].offset_lo = \
+	     (int)interrupt_handler##n & 0xffff; \
+	idt[n].segment_selector = \
+	     kernel_code * sizeof (union gdt_entry); \
+	idt[n].reserved0 = 0; \
+	idt[n].gate_type = gate_type_32bit_int; \
+	idt[n].reserved1 = 0; \
+	idt[n].dpl = 0; \
+	idt[n].present = 1; \
+	idt[n].offset_hi = \
+		(int)interrupt_handler##n >> 16; \
+
+#include "default-isr-nums.inc"
+
+#undef DEFAULT_ISR
+
+	idt_descriptor.size = sizeof (struct idt_descriptor)
+		* sizeof idt - 1;
 	idt_descriptor.offset = (long)idt;
 
 	asm volatile("lidt %0" : : "m"(idt_descriptor));
+	asm volatile("sti");
 }

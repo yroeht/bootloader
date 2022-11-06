@@ -1,60 +1,78 @@
 	.code16
-	.text
+	.section .boot
 	.globl _start
 _start:
 	cld
 
-	call clear
+	xor %ax, %ax
+	mov %ax, %es
+	mov %ax, %ds
+	mov %ax, %ss
 
 	mov %dl, (drive_num)
-	mov $banner_msg, %si
-	call print_string
 
-	mov $bootsect_str, %si
-	call print_string
-	mov (mem_start), %si
-	add $510, %si
-	mov (%si), %ax
-	call itoa_hex
-	call newline
+	call clear
+	mov $banner_msg, %si
+	call print_string16
 
 	call init_drive
 	jc error
-	mov (mem_start), %bx
+
+	# prepare to read drive
+	mov (drive_num), %dl
+	mov $0x0002, %cx # sector number 6 bits
+	mov (number_extra_sectors), %ax
+	mov $0x7c00, %bx
 	add $512, %bx
-	xor %ax, %ax
-	mov %ax, %es
-	mov (number_extra_sectors), %al
+
+read_loop:
+	push %ax
 	call read_sector
 	jc error
+	pop %ax
+	dec %ax
+	jz end_read
+	add $512, %bx
+	jnc skip_inc_es
+	push %ax
+	mov %es, %ax
+	add $0x1000, %ax
+	mov %ax, %es
+	pop %ax
+skip_inc_es:
+	inc %cl
+	# TODO: acquire disk geometry
+	cmp $0x25, %cl
+	jne read_loop
+	mov $1, %cl
+	inc %ch
+	jmp read_loop
+end_read:
 
 	call pmode_switch
 
 error:
 	mov $error_msg, %si
-	call print_string
+	call print_string16
+	call newline
 error_loop:
 	jmp error_loop
 
 	#include "print16.S"
 	#include "drive.S"
 
-banner_msg:
-	.string "Welcome to 16 bits Real Mode!\r\n"
 error_msg:
 	.string "Error...\r\n"
-bootsect_str:
-	.string "Our first sector's magic number is "
+	.globl banner_msg
+banner_msg:
+	.string "Welcome to 16 bits Real Mode!\r\n"
 
 	.global number_extra_sectors
 number_extra_sectors:
-	.byte 0x6
-mem_start:
-	.word 0x7c00
-
+	.short 150
 	.globl drive_num
 drive_num:
 	.byte
-
 	.org 510, 0
 	.short 0xaa55
+

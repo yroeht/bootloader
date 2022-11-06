@@ -35,7 +35,8 @@ cursor_get:
 	pop %ax
 	ret
 
-print_string:
+	.globl print_string16
+print_string16:
 	push %si
 	push %ax
 	push %cx
@@ -54,10 +55,12 @@ print_string_exit:
 	ret
 
 newline:
+	push %ax
 	mov $'\r', %al
 	call print_char
 	mov $'\n', %al
 	call print_char
+	pop %ax
 	ret
 
 clear:
@@ -103,7 +106,7 @@ itoa_hex:
 	push %si
 	mov %ax, %cx
 	mov $hex_prefix, %si
-	call print_string
+	call print_string16
 
 	mov $hex, %bx
 
