@@ -9,7 +9,9 @@ Toy kernel and bootloader in x86 assembly
 2. Load some additional sectors
 3. Setup Global Descriptor Table and enter Protected Mode
 4. Print to framebuffer
-5. Interrupt Descriptor Table (TODO)
-6. ...
-7. Load an ELF and execute it (TODO)
-7. Load another ELF and execute it too (TODO)
+5. Setup Interrupt Descriptor Table
+6. Configure 8259 PIC
+7. Configure 8042 PS/2
+8. ...
+9. Load an ELF and execute it (TODO)
+a. Load another ELF and execute it too (TODO)
