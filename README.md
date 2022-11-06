@@ -14,4 +14,4 @@ Toy kernel and bootloader in x86 assembly
 7. Configure 8042 PS/2
 8. ...
 9. Load an ELF and execute it (TODO)
-a. Load another ELF and execute it too (TODO)
+10. Load another ELF and execute it too (TODO)
