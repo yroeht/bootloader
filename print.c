@@ -13,7 +13,7 @@ void reset_colorcode(void)
 	framebuffer_color.blink = 0;
 }
 
-static void print_char(char c)
+void print_char(char c)
 {
 	static short * const framebuffer = (short *) 0xb8000;
 	const int columns = 80;
