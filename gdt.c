@@ -2,10 +2,14 @@
 
 extern long start32;
 
-union gdt_entry gdt[segment_gdt_idx_max];
-struct gdt_descriptor gdt_descriptor;
+union gdt_entry gdt[segment_gdt_idx_max]
+__attribute__((section(".bits16.data")));
+struct gdt_descriptor gdt_descriptor
+__attribute__((section(".bits16.data")));
+
 const char kernel_ds = kernel_data * sizeof (union gdt_entry);
 
+__attribute__((section(".bits16.code")))
 void init_gdt(void)
 {
 	gdt[null].w1 = 0;

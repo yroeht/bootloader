@@ -1,4 +1,5 @@
 	.code16
+	.section .bits16.code
 	.globl pmode_switch
 pmode_switch:
 	# save the cursor position to resume there in 32 bits

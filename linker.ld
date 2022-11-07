@@ -1,11 +1,13 @@
 SECTIONS
 {
     . = 0x7c00;
+    .bits16 :
+    {
+        *(.bits16*);
+    }
     .text :
     {
-        *(.boot*);
         *(.text*);
-        *(.bits16*);
     }
     .data :
     {

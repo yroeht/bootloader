@@ -1,5 +1,5 @@
 	.code16
-	.section .boot
+	.section .bits16.code
 	.globl _start
 _start:
 	cld

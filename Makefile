@@ -27,7 +27,7 @@ gdt.o:gdt.c
 	${CC} -m16 ${COMMON_FLAGS}   -c -o $@ $^
 
 isr.o:isr.c
-	${CC} -mgeneral-regs-only ${CFLAGS}   -c -o $@ $^
+	${CC} ${CFLAGS} -mgeneral-regs-only    -c -o $@ $^
 
 debug: clean ${BOOT_IMAGE}
 	qemu-system-i386 -fda ${BOOT_IMAGE} -s -S
