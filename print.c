@@ -1,8 +1,7 @@
 #include <stdarg.h>
 #include "print.h"
 
-int framebuffer_idx
-	__attribute__((section(".bits16.data")));
+int framebuffer_idx __attribute__((section(".bits16.data")));
 union colorcode framebuffer_color;
 
 void reset_colorcode(void)

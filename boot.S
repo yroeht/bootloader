@@ -12,15 +12,15 @@ _start:
 	# read disk geometry
 	mov $0x8, %ah
 	int $0x13
+	jc error
 	and $0x3f, %cx
 	mov %cx, (sectors_per_cylinder)
 	xor %di, %di
 	xor %ax, %ax
 	mov %ax, %es
-	mov %ax, %ds
-	mov %ax, %ss
 
 	mov (drive_num), %dx
+	xor %dh, %dh
 	call init_drive
 	jc error
 
@@ -30,9 +30,9 @@ _start:
 	mov $_start, %bx
 	add (size_of_sector), %bx
 
-
 read_loop:
 	push %ax
+	test %al, %al
 	call read_sector
 	jc error
 	pop %ax
@@ -49,8 +49,10 @@ skip_inc_es:
 	inc %cl
 	cmp (sectors_per_cylinder), %cl
 	jne read_loop
-	mov $1, %cl
-	inc %ch
+	# second head sectors start at 0 not 1
+	mov $0, %cl
+	inc %dh
+	call init_drive
 	jmp read_loop
 end_read:
 
@@ -78,11 +80,10 @@ es_step:
 	.short 0x1000
 	.global number_extra_sectors
 number_extra_sectors:
-	.short 150
+	.short 60
 	.globl drive_num
 drive_num:
 	.short
-
 
 	.org 510, 0
 	.short 0xaa55

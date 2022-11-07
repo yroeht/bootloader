@@ -19,7 +19,6 @@ void interrupt_handler##n(struct interrupt_frame *frame)       \
 		printk("%s err=%p\r\n", str, frame->err);      \
 	else                                                   \
 		printk("%s\r\n", str);                         \
-	pic_ack();                                             \
 }                                                              \
 
 #include "isr-list.inc"

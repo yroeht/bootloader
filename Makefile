@@ -1,7 +1,7 @@
-COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector
+COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector -g
 CFLAGS=-m32 ${COMMON_FLAGS}
 ASFLAGS=-m16 ${COMMON_FLAGS}
-LDFLAGS=--oformat binary --nmagic -m elf_i386
+LDFLAGS=--nmagic -m elf_i386
 BOOT_IMAGE=boot.img
 
 C_SOURCE=kernel.c \
@@ -21,7 +21,8 @@ all: clean ${BOOT_IMAGE}
 	qemu-system-i386 -fda ${BOOT_IMAGE}
 
 ${BOOT_IMAGE}: ${ASM_OBJ} ${C_OBJ}
-	ld -Tlinker.ld $? -o $@ ${LDFLAGS}
+	ld -Tlinker.ld $? -o boot.elf ${LDFLAGS}
+	objcopy -O binary boot.elf $@
 
 gdt.o:gdt.c
 	${CC} -m16 ${COMMON_FLAGS}   -c -o $@ $^

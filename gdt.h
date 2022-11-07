@@ -70,5 +70,5 @@ struct gdt_descriptor
 	long address;
 } __attribute__((__packed__));
 
-extern const char kernel_ds;
+extern const int kernel_ds;
 

@@ -45,4 +45,3 @@ cursor_save:
 	call invisible_cursor
 
 	ret
-
