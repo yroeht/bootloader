@@ -3,6 +3,13 @@
 
 extern void pic_ack(void);
 
+__attribute__ ((interrupt))
+void default_interrupt_handler(struct interrupt_frame *frame)
+{
+	(void) frame;
+	printk("%s\r\n", __func__);
+}
+
 #define ISR(n, str, has_error, is_excn)                        \
 __attribute__ ((interrupt))                                    \
 void interrupt_handler##n(struct interrupt_frame *frame)       \

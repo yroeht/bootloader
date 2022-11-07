@@ -9,6 +9,20 @@ static const short kernel_cs = kernel_code * sizeof (union gdt_entry);
 
 void init_idt(void)
 {
+	for (unsigned i = 0; i < sizeof idt / sizeof idt[0]; ++i)
+	{
+		idt[i].offset_lo =
+			(int)default_interrupt_handler & 0xffff;
+		idt[i].segment_selector = kernel_cs;
+		idt[i].reserved0 = 0;
+		idt[i].gate_type = gate_type_32bit_int;
+		idt[i].reserved1 = 0;
+		idt[i].dpl = 0;
+		idt[i].present = 1;
+		idt[i].offset_hi =
+			(int)default_interrupt_handler >> 16;
+	}
+
 #define ISR(n, str, has_error, is_excn)                        \
 	idt[n].offset_lo =                                     \
 	     (int)interrupt_handler##n & 0xffff;               \
@@ -38,8 +52,7 @@ void init_idt(void)
 	idt[65].offset_hi =
 		(int)keyboard_handler >> 16;
 
-	idt_descriptor.size = sizeof (struct idt_descriptor)
-		* sizeof idt - 1;
+	idt_descriptor.size = sizeof idt - 1;
 	idt_descriptor.offset = (long)idt;
 
 	asm volatile("lidt %0" : : "m"(idt_descriptor));

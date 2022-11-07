@@ -17,4 +17,6 @@ void interrupt_handler##n(struct interrupt_frame *frame);      \
 
 #undef ISR
 
+void default_interrupt_handler(struct interrupt_frame *frame);
+
 void keyboard_handler(struct interrupt_frame *frame);

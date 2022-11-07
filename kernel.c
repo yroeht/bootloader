@@ -14,6 +14,7 @@ void kernel_entry(void)
 	init_pic();
 	init_idt();
 	asm volatile ("int $0x1");
+	asm volatile ("int $0x81");
 	for (;;)
 		continue;
 }
