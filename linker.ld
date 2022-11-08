@@ -21,4 +21,8 @@ SECTIONS
     {
         *(.bss*);
     }
+    .end_of_elf :
+    {
+        *(.end_of_elf*);
+    }
 }

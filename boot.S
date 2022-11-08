@@ -80,7 +80,7 @@ es_step:
 	.short 0x1000
 	.global number_extra_sectors
 number_extra_sectors:
-	.short 60
+	.short 100
 	.globl drive_num
 drive_num:
 	.short
