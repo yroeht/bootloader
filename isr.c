@@ -1,7 +1,6 @@
 #include "isr.h"
+#include "pic.h"
 #include "print.h"
-
-extern void pic_ack(void);
 
 __attribute__ ((interrupt))
 void default_interrupt_handler(struct interrupt_frame *frame)
@@ -19,7 +18,9 @@ void interrupt_handler##n(struct interrupt_frame *frame)       \
 		printk("%s err=%p\r\n", str, frame->err);      \
 	else                                                   \
 		printk("%s\r\n", str);                         \
+	pic_ack();                                             \
 }                                                              \
+
 
 #include "isr-list.inc"
 

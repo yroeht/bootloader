@@ -8,10 +8,10 @@ C_SOURCE=kernel.c \
 	 print.c \
 	 idt.c \
 	 isr.c \
+	 pic.c \
 
 ASM_SOURCE=boot.S \
 	   pmode.S \
-	   pic.S \
 
 C_OBJ= $(C_SOURCE:.c=.o gdt.o isr.o)
 
