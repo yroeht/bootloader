@@ -15,6 +15,7 @@ _start:
 	jc error
 	and $0x3f, %cx
 	mov %cx, (sectors_per_cylinder)
+	mov %dh, (heads)
 	xor %di, %di
 	xor %ax, %ax
 	mov %ax, %es
@@ -48,10 +49,15 @@ read_loop:
 skip_inc_es:
 	inc %cl
 	cmp (sectors_per_cylinder), %cl
-	jne read_loop
+	jl read_loop
 	# second head sectors start at 0 not 1
 	mov $0, %cl
 	inc %dh
+	cmp (heads), %dh
+	jle skip_inc_cylinder
+	xor %dh, %dh
+	inc %ch
+skip_inc_cylinder:
 	call init_drive
 	jmp read_loop
 end_read:
@@ -75,15 +81,17 @@ banner_msg:
 size_of_sector:
 	.short 512
 sectors_per_cylinder:
-	.long 0x25
+	.long 0
 es_step:
 	.short 0x1000
 	.global number_extra_sectors
 number_extra_sectors:
-	.short 100
+	.short 200
 	.globl drive_num
 drive_num:
-	.short
+	.short 0
+heads:
+	.short 0
 
 	.org 510, 0
 	.short 0xaa55
