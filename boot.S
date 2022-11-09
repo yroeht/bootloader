@@ -49,9 +49,9 @@ read_loop:
 skip_inc_es:
 	inc %cl
 	cmp (sectors_per_cylinder), %cl
-	jl read_loop
+	jle read_loop
 	# second head sectors start at 0 not 1
-	mov $0, %cl
+	mov $1, %cl
 	inc %dh
 	cmp (heads), %dh
 	jle skip_inc_cylinder
