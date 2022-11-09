@@ -9,6 +9,7 @@ C_SOURCE=kernel.c \
 	 idt.c \
 	 isr.c \
 	 pic.c \
+	 ata.c \
 
 ASM_SOURCE=boot.S \
 	   pmode.S \
@@ -18,7 +19,7 @@ C_OBJ= $(C_SOURCE:.c=.o gdt.o isr.o)
 ASM_OBJ= $(ASM_SOURCE:.S=.o)
 
 all: clean ${BOOT_IMAGE}
-	qemu-system-i386 -fda ${BOOT_IMAGE}
+	qemu-system-i386 -fda ${BOOT_IMAGE} --display curses
 
 ${BOOT_IMAGE}: ${ASM_OBJ} ${C_OBJ}
 	ld -Tlinker.ld $? -o boot.elf ${LDFLAGS}
