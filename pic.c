@@ -1,5 +1,5 @@
+#include "ports.h"
 #include "print.h"
-
 
 enum pic_irq_master
 {
@@ -35,17 +35,6 @@ enum port
 	pic_port_slave_control = 0xa0,
 	pic_port_slave_data = 0xa1
 };
-
-static inline void outb(short port, unsigned char b)
-{
-	asm volatile("outb %0, %1" : : "a"(b), "Nd"(port));
-}
-static inline char inb(short port)
-{
-	char ret;
-	asm volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
-	return ret;
-}
 
 void pic_init(void)
 {
