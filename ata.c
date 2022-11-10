@@ -1,8 +1,9 @@
+#include "ata.h"
 #include "ports.h"
 
 static const int words_per_sector = 256;
 
-void ata_lba_read(long lba, char nb, char* addr)
+void ata_lba_read(long lba, char nb, short* addr)
 {
 	lba &= 0x0fffffff;
 	outb(0x01f6, (lba >> 24) | 0xe0);
@@ -13,14 +14,14 @@ void ata_lba_read(long lba, char nb, char* addr)
 
 	outb(0x01f7, 0x20);
 
-	char status = inb(0x20);
+	char status = inb(0x01f7);
 	while (!(status & 8))
-		continue;
+		status = inb(0x01f7);
 	for (int i = 0; i < nb * words_per_sector; ++i)
-		addr[i] = inb(0x01f0);
+		addr[i] = inw(0x01f0);
 }
 
-void ata_lba_write(long lba, char nb, const char* addr)
+void ata_lba_write(long lba, char nb, const short* addr)
 {
 	lba &= 0x0fffffff;
 	outb(0x01f6, (lba >> 24) | 0xe0);
@@ -31,11 +32,11 @@ void ata_lba_write(long lba, char nb, const char* addr)
 
 	outb(0x01f7, 0x30);
 
-	char status = inb(0x30);
+	char status = inb(0x01f7);
 	while (!(status & 8))
-		continue;
+		status = inb(0x01f7);
 	for (int i = 0; i < nb * words_per_sector; ++i)
-		outb(0x01f0, addr[i]);
+		outw(0x01f0, addr[i]);
 }
 
 

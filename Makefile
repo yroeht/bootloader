@@ -19,7 +19,7 @@ C_OBJ= $(C_SOURCE:.c=.o gdt.o isr.o)
 ASM_OBJ= $(ASM_SOURCE:.S=.o)
 
 all: clean ${BOOT_IMAGE}
-	qemu-system-i386 -fda ${BOOT_IMAGE} --display curses
+	qemu-system-i386 -hda ${BOOT_IMAGE}
 
 ${BOOT_IMAGE}: ${ASM_OBJ} ${C_OBJ}
 	ld -Tlinker.ld $? -o boot.elf ${LDFLAGS}
