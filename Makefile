@@ -3,6 +3,8 @@ CFLAGS=-m32 ${COMMON_FLAGS}
 ASFLAGS=-m16 ${COMMON_FLAGS}
 LDFLAGS=--nmagic -m elf_i386
 BOOT_IMAGE=boot.img
+ELF=boot.elf
+FS_IMAGE=fs.img
 
 C_SOURCE=kernel.c \
 	 print.c \
@@ -21,9 +23,15 @@ ASM_OBJ= $(ASM_SOURCE:.S=.o)
 all: clean ${BOOT_IMAGE}
 	qemu-system-i386 -hda ${BOOT_IMAGE}
 
-${BOOT_IMAGE}: ${ASM_OBJ} ${C_OBJ}
-	ld -Tlinker.ld $? -o boot.elf ${LDFLAGS}
-	objcopy -O binary boot.elf $@
+${BOOT_IMAGE}: ${ELF} ${FS_IMAGE}
+	cp ${ELF} $@
+	truncate -s 51200 $@
+	dd if=${FS_IMAGE} bs=512 >>$@
+
+${ELF}: ${ASM_OBJ} ${C_OBJ}
+	ld -Tlinker.ld $? -o ${ELF} ${LDFLAGS}
+	objcopy -O binary ${ELF} $@
+
 
 gdt.o:gdt.c
 	${CC} -m16 ${COMMON_FLAGS}   -c -o $@ $^
@@ -35,4 +43,8 @@ debug: clean ${BOOT_IMAGE}
 	qemu-system-i386 -fda ${BOOT_IMAGE} -s -S
 
 clean:
-	rm -vf *.o ${BOOT_IMAGE}
+	rm -vf *.o ${BOOT_IMAGE} ${FS_IMAGE}
+
+${FS_IMAGE}:
+	mkfs.fat -F12 -C ${FS_IMAGE} 64
+	find fs -exec mcopy -i ${FS_IMAGE} {} ::${} \;
