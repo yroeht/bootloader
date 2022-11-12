@@ -1,6 +1,7 @@
 SECTIONS
 {
     . = 0x7c00;
+    __start_of_mem = .;
     .bits16 :
     {
         *(.bits16*);

@@ -1,4 +1,7 @@
-COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector -g
+NUM_SECTORS=100
+SECTOR_SZ=512
+FS_OFFSET=$$((${NUM_SECTORS} * ${SECTOR_SZ}))
+COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector -g -DFS_OFFSET=${FS_OFFSET}
 CFLAGS=-m32 ${COMMON_FLAGS}
 ASFLAGS=-m16 ${COMMON_FLAGS}
 LDFLAGS=--nmagic -m elf_i386
@@ -12,6 +15,7 @@ C_SOURCE=kernel.c \
 	 isr.c \
 	 pic.c \
 	 ata.c \
+	 fat.c \
 
 ASM_SOURCE=boot.S \
 	   pmode.S \
@@ -25,8 +29,8 @@ all: clean ${BOOT_IMAGE}
 
 ${BOOT_IMAGE}: ${ELF} ${FS_IMAGE}
 	cp ${ELF} $@
-	truncate -s 51200 $@
-	dd if=${FS_IMAGE} bs=512 >>$@
+	truncate -s ${FS_OFFSET} $@
+	dd if=${FS_IMAGE} bs=${SECTOR_SZ} >>$@
 
 ${ELF}: ${ASM_OBJ} ${C_OBJ}
 	ld -Tlinker.ld $? -o ${ELF} ${LDFLAGS}
@@ -47,4 +51,4 @@ clean:
 
 ${FS_IMAGE}:
 	mkfs.fat -F12 -C ${FS_IMAGE} 64
-	find fs -exec mcopy -i ${FS_IMAGE} {} ::${} \;
+	find fs/* -exec mcopy -i ${FS_IMAGE} {} ::${} \;
