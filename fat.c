@@ -29,9 +29,7 @@ static void print_date(short arg)
 
 void print_dir(const struct fat_directory *dir)
 {
-	for (unsigned i = 0; i < sizeof dir->filename; ++i)
-		print_char(dir->filename[i]);
-	printk("  %x ", dir->attributes);
+	printk("%.*s  %x ", sizeof dir->filename, dir->filename, dir->attributes);
 	print_time(dir->time_created);
 	printk(" ");
 	print_date(dir->date_created);

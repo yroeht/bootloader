@@ -41,71 +41,106 @@ void print_char(char c)
 	framebuffer_idx++;
 }
 
-static void print_string(const char *s)
+static void print_string(const char *s, int min, int max)
 {
-	while (*s)
+	while (*s && max--)
+	{
 		print_char(*s++);
+		min--;
+	}
+	while (min-- > 0)
+		print_char(' ');
 }
 
-static void print_hex(int x)
+static void print_base(int x, unsigned b, int min, int max)
 {
-	print_string("0x");
-	const int nibbles = 2 * sizeof x;
-	for (int i = nibbles - 1; i >= 0; --i)
-		print_char("0123456789abcdef"[((x >> (4 * i)) & 0xf)]);
-}
-
-static void print_base(int x, unsigned b)
-{
-	char stack[33];
+	char stack[34];
 	char sym[62] =
 		"0123456789"
 		"abcdefghijklmnopqrstuvwxyz"
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	char negative = x < 0;
+	if (negative)
+		x = -x;
 
 	if (b < 2 || b > sizeof sym)
 		return;
 
-	if (!x)
-		print_char('0');
-
 	for (unsigned i = 0; i < sizeof stack; ++i)
 		stack[i] = 0;
 
+	for (int i = 0; i < min; ++i)
+		stack[sizeof stack - 2 - i] = sym[0];
+
 	unsigned i;
-	for (i = 1; x && i < sizeof stack; ++i, x /= b)
+	for (i = 1; max-- && x && i < sizeof stack; ++i, x /= b)
 		stack[sizeof stack - i - 1] = sym[x % b];
 
-	print_string(&stack[sizeof stack - i]);
+	if (i < (unsigned)min + 1)
+		i = min + 1;
+
+	if (negative)
+		stack[sizeof stack - ++i] = '-';
+
+	print_string(&stack[sizeof stack - i], min, sizeof stack);
+}
+
+static void print_hex(int x)
+{
+	print_char('0');
+	print_char('x');
+	print_base(x, 16, 8, 8);
 }
 
 void printk(const char *fmt, ...)
 {
 	va_list ap;
 	int possible_arg = 0;
+	int reading_min = 0;
+	int max;
+	int min;
 	va_start(ap, fmt);
 	while (*fmt)
 	{
+		if (possible_arg && '.' == *fmt)
+			reading_min = 0;
+		if (possible_arg && '*' == *fmt)
+		{
+			if (reading_min)
+				min = va_arg(ap, int);
+			else
+				max = va_arg(ap, int);
+		}
 		if (possible_arg)
 		{
 			if ('s' == *fmt)
-				print_string(va_arg(ap, char *));
-			if ('p' == *fmt)
+				print_string(va_arg(ap, char *), min, max ? max : 1000000);
+			else if ('p' == *fmt)
 				print_hex(va_arg(ap, int));
-			if ('d' == *fmt)
-				print_base(va_arg(ap, int), 10);
-			if ('x' == *fmt)
-				print_base(va_arg(ap, int), 16);
-			if ('c' == *fmt)
+			else if ('d' == *fmt)
+				print_base(va_arg(ap, int), 10, min ? min : 1, max ? max : 32);
+			else if ('x' == *fmt)
+				print_base(va_arg(ap, int), 16, min ? min : 1, max ? max : 32);
+			else if ('c' == *fmt)
 				print_char(va_arg(ap, int));
-			if ('%' == *fmt)
+			else if ('%' == *fmt)
 				print_char('%');
+			else
+			{
+				++fmt;
+				continue;
+			}
 			possible_arg = 0;
 			++fmt;
 			continue;
 		}
 		if ('%' == *fmt)
+		{
+			reading_min = 1;
 			possible_arg = 1;
+			max = 0;
+			min = 0;
+		}
 		else
 			print_char(*fmt);
 		++fmt;

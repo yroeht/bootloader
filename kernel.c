@@ -19,6 +19,7 @@ void kernel_entry(void)
 	printk("Welcome to 32 bits Protected Mode!\r\n");
 	printk("Loaded %d extra sectors after bootsector.\r\n",
 			number_extra_sectors);
+	printk("%.*s %d %*.x %d\r\n", 4, "Teststring", 42, 8, 0x1234, 0);
 	if (magic_check != MAGIC_CHECK)
 	{
 		printk("Check of magic number failed, "
