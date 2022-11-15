@@ -71,8 +71,7 @@ void kernel_entry(void)
 			* sizeof (struct fat_directory))
 			/ br->number_of_bytes_per_sector
 		+ (active_cluster - 2)
-			* br->number_of_sectors_per_cluster
-			* br->number_of_bytes_per_sector;
+			* br->number_of_sectors_per_cluster;
 	ata_lba_read(file_sector, 1, (void*)filecontent);
 	for (int i = 0; i < fat_dirp->file_size; ++i)
 		printk("%c", filecontent[i]);
