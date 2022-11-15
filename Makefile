@@ -39,7 +39,7 @@ ${BOOT_IMAGE}: ${ELF}
 	dd if=${FS_IMAGE} bs=${SECTOR_SZ} >>$@
 
 ${ELF}: ${ASM_OBJ} ${C_OBJ}
-	ld -Tlinker.ld $? -o ${ELF} ${LDFLAGS}
+	ld -Tlinker.ld $^ -o ${ELF} ${LDFLAGS}
 	objcopy -O binary ${ELF} $@
 
 gdt.o:gdt.c
