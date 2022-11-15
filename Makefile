@@ -8,6 +8,7 @@ LDFLAGS=--nmagic -m elf_i386
 BOOT_IMAGE=boot.img
 ELF=boot.elf
 FS_IMAGE=fs.img
+EMU=qemu-system-i386
 
 C_SOURCE=kernel.c \
 	 print.c \
@@ -24,10 +25,15 @@ C_OBJ= $(C_SOURCE:.c=.o gdt.o isr.o)
 
 ASM_OBJ= $(ASM_SOURCE:.S=.o)
 
-all: clean ${BOOT_IMAGE}
-	qemu-system-i386 -hda ${BOOT_IMAGE}
+all: app run
 
-${BOOT_IMAGE}: ${ELF} ${FS_IMAGE}
+app:
+	make -C app
+
+run: ${BOOT_IMAGE}
+	${EMU} -hda ${BOOT_IMAGE}
+
+${BOOT_IMAGE}: ${ELF}
 	cp ${ELF} $@
 	truncate -s ${FS_OFFSET} $@
 	dd if=${FS_IMAGE} bs=${SECTOR_SZ} >>$@
@@ -36,19 +42,24 @@ ${ELF}: ${ASM_OBJ} ${C_OBJ}
 	ld -Tlinker.ld $? -o ${ELF} ${LDFLAGS}
 	objcopy -O binary ${ELF} $@
 
-
 gdt.o:gdt.c
 	${CC} -m16 ${COMMON_FLAGS}   -c -o $@ $^
 
 isr.o:isr.c
 	${CC} ${CFLAGS} -mgeneral-regs-only    -c -o $@ $^
 
-debug: clean ${BOOT_IMAGE}
-	qemu-system-i386 -fda ${BOOT_IMAGE} -s -S
+debug: ${BOOT_IMAGE}
+	${EMU} -fda ${BOOT_IMAGE} -s -S
 
 clean:
-	rm -vf *.o ${BOOT_IMAGE} ${FS_IMAGE}
+	make -C app $@
+	rm -vf *.o ${BOOT_IMAGE}
 
-${FS_IMAGE}:
+${FS_IMAGE}: app
+	rm -f ${FS_IMAGE}
 	mkfs.fat -F12 -C ${FS_IMAGE} 64
-	find fs/* -exec mcopy -i ${FS_IMAGE} {} ::${} \;
+	mcopy -i ${FS_IMAGE} fs/* ::
+	mcopy -i ${FS_IMAGE} app/*.elf ::
+	mdir -i ${FS_IMAGE} ::
+
+.PHONY: ${FS_IMAGE} app
