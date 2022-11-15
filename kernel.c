@@ -3,6 +3,7 @@
 #include "pic.h"
 #include "print.h"
 #include "fat.h"
+#include "string.h"
 
 extern short number_extra_sectors;
 extern long __start_of_mem;
@@ -53,10 +54,20 @@ void kernel_entry(void)
 	unsigned first_fat_sector = fat_base
 		+ br->number_of_file_allocation_tables * br->number_of_sectors_per_fat;
 	ata_lba_read(first_fat_sector, 1, (void*)fat_dirp);
-	print_dir(fat_dirp);
-	printk("\r\n");
 
-	unsigned active_cluster = fat_dirp->cluster_lo;
+	struct fat_directory *testfile = 0;
+	for (int i = 0; i < br->number_of_root_directory_entries; ++i)
+	{
+		struct fat_directory *dir = fat_dirp + i;
+		if (!*dir->filename)
+			break;
+		print_dir(dir);
+		printk("\r\n");
+		if (!strncmp(dir->filename, "TEST    TXT", sizeof dir->filename))
+			testfile = dir;
+	}
+
+	unsigned active_cluster = testfile->cluster_lo;
 	unsigned fat_offset = active_cluster + (active_cluster / 2);
 	unsigned int ent_offset = fat_offset % sector_size;
 	unsigned short table_value = *(unsigned short*)&fat[ent_offset];
@@ -73,10 +84,9 @@ void kernel_entry(void)
 		+ (active_cluster - 2)
 			* br->number_of_sectors_per_cluster;
 	ata_lba_read(file_sector, 1, (void*)filecontent);
-	for (int i = 0; i < fat_dirp->file_size; ++i)
+	for (int i = 0; i < testfile->file_size; ++i)
 		printk("%c", filecontent[i]);
 	printk("\r\n");
-
 
 	for (;;)
 		continue;
