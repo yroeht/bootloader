@@ -1,7 +1,7 @@
 NUM_SECTORS=100
 SECTOR_SZ=512
 FS_OFFSET=$$((${NUM_SECTORS} * ${SECTOR_SZ}))
-COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector -g -DFS_OFFSET=${FS_OFFSET}
+COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector -g -DFS_OFFSET=${FS_OFFSET} -Wno-builtin-declaration-mismatch
 CFLAGS=-m32 ${COMMON_FLAGS}
 ASFLAGS=-m16 ${COMMON_FLAGS}
 LDFLAGS=--nmagic -m elf_i386
@@ -17,6 +17,7 @@ C_SOURCE=kernel.c \
 	 pic.c \
 	 ata.c \
 	 fat.c \
+	 string.c \
 
 ASM_SOURCE=boot.S \
 	   pmode.S \
