@@ -8,7 +8,7 @@ static void print_time(short arg)
 	int hours = time.hours & 0x1f;
 	int minutes = time.minutes & 0x3f;
 	int seconds = (time.seconds & 0x1f) * 2;
-	printk("%d:%d:%d", hours, minutes, seconds);
+	printk("%2.d:%2.d:%2.d", hours, minutes, seconds);
 }
 
 static void print_date(short arg)

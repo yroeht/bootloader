@@ -125,6 +125,15 @@ void printk(const char *fmt, ...)
 				print_char(va_arg(ap, int));
 			else if ('%' == *fmt)
 				print_char('%');
+			else if ('0' <= *fmt && *fmt <= '9')
+			{
+				if (reading_min)
+					min = min * 10 + *fmt - '0';
+				else
+					max = max * 10 + *fmt - '0';
+				++fmt;
+				continue;
+			}
 			else
 			{
 				++fmt;
