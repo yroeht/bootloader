@@ -4,6 +4,7 @@ LDFLAGS=--nmagic -m elf_i386
 ELF=printk.elf
 
 C_SOURCE=printk.c \
+	 ../lib/print.c \
 
 C_OBJ= $(C_SOURCE:.c=.o)
 
