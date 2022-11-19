@@ -1,9 +1,10 @@
 #include "ata.h"
 #include "idt.h"
 #include "pic.h"
-#include "print.h"
+#include "lib/print.h"
 #include "fat.h"
 #include "string.h"
+#include "putc.h"
 
 extern short number_extra_sectors;
 extern long __start_of_mem;
@@ -17,6 +18,8 @@ short sector[256];
 void kernel_entry(void)
 {
 	reset_colorcode();
+	pic_init();
+	init_idt();
 	printk("Welcome to 32 bits Protected Mode!\r\n");
 	printk("Loaded %d extra sectors after bootsector.\r\n",
 			number_extra_sectors);
@@ -31,8 +34,6 @@ void kernel_entry(void)
 			continue;
 	}
 	printk("Magic check validated, ELF loaded until %p\r\n", &magic_check);
-	pic_init();
-	init_idt();
 	asm volatile ("int $0x1");
 	asm volatile ("int $0x81");
 

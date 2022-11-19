@@ -52,6 +52,17 @@ void init_idt(void)
 	idt[65].offset_hi =
 		(int)keyboard_handler >> 16;
 
+	idt[128].offset_lo =
+		(int)syscall_handler & 0xffff;
+	idt[128].segment_selector = kernel_cs;
+	idt[128].reserved0 = 0;
+	idt[128].gate_type = gate_type_32bit_int;
+	idt[128].reserved1 = 0;
+	idt[128].dpl = 0;
+	idt[128].present = 1;
+	idt[128].offset_hi =
+		(int)syscall_handler >> 16;
+
 	idt_descriptor.size = sizeof idt - 1;
 	idt_descriptor.offset = (long)idt;
 

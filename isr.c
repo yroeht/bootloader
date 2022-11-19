@@ -1,6 +1,6 @@
 #include "isr.h"
 #include "pic.h"
-#include "print.h"
+#include "lib/print.h"
 
 __attribute__ ((interrupt))
 void default_interrupt_handler(struct interrupt_frame *frame)
@@ -25,6 +25,8 @@ void interrupt_handler##n(struct interrupt_frame *frame)       \
 #include "isr-list.inc"
 
 #undef ISR
+
+#include "putc.h"
 
 static int shift_pressed;
 void process_key(char k)
@@ -57,7 +59,7 @@ void process_key(char k)
 			case '\\': k = '|'; break;
 		}
 	}
-	print_char(k);
+	putc(k);
 }
 
 __attribute__((interrupt))
@@ -130,4 +132,25 @@ void keyboard_handler(struct interrupt_frame *frame)
 		case 0x2b: process_key('\\'); return;
 	}
 	printk("%s key code %p\r\n", __func__, keycode);
+}
+
+__attribute__((interrupt))
+void syscall_handler(struct interrupt_frame *frame)
+{
+	(void) frame;
+	int num;
+	int arg1;
+
+	asm("mov 16(%%ebp), %0" : "=r"(num));
+	asm("mov 20(%%ebp), %0" : "=r"(arg1));
+
+	switch (num)
+	{
+		case 0:
+			putc(arg1);
+			break;
+		default:
+			printk("Unknown syscall number %d\r\n", num);
+			break;
+	}
 }

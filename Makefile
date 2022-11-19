@@ -10,8 +10,11 @@ ELF=boot.elf
 FS_IMAGE=fs.img
 EMU=qemu-system-i386
 
-C_SOURCE=kernel.c \
-	 print.c \
+C_LIB_SOURCES=lib/print.c \
+
+C_SOURCE=${C_LIB_SOURCES} \
+	 kernel.c \
+	 putc.c \
 	 idt.c \
 	 isr.c \
 	 pic.c \
@@ -35,13 +38,12 @@ run: ${BOOT_IMAGE}
 	${EMU} -hda ${BOOT_IMAGE}
 
 ${BOOT_IMAGE}: ${ELF}
-	cp ${ELF} $@
+	objcopy -O binary ${ELF} $@
 	truncate -s ${FS_OFFSET} $@
 	dd if=${FS_IMAGE} bs=${SECTOR_SZ} >>$@
 
 ${ELF}: ${ASM_OBJ} ${C_OBJ}
 	ld -Tlinker.ld $^ -o ${ELF} ${LDFLAGS}
-	objcopy -O binary ${ELF} $@
 
 gdt.o:gdt.c
 	${CC} -m16 ${COMMON_FLAGS}   -c -o $@ $^
@@ -50,7 +52,7 @@ isr.o:isr.c
 	${CC} ${CFLAGS} -mgeneral-regs-only    -c -o $@ $^
 
 debug: ${BOOT_IMAGE}
-	${EMU} -fda ${BOOT_IMAGE} -s -S
+	${EMU} -hda ${BOOT_IMAGE} -s -S
 
 clean:
 	make -C app $@
