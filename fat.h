@@ -62,4 +62,6 @@ union fat_date
 	short w;
 };
 
-void print_dir(const struct fat_directory *dir);
+void fs_init(void);
+void print_dir(void *param);
+void print_file(const char *filename);

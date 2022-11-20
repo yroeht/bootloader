@@ -1,6 +1,7 @@
 #include "isr.h"
 #include "pic.h"
 #include "lib/print.h"
+#include "shell.h"
 
 __attribute__ ((interrupt))
 void default_interrupt_handler(struct interrupt_frame *frame)
@@ -60,6 +61,7 @@ void process_key(char k)
 		}
 	}
 	putc(k);
+	shell_feed_char(k);
 }
 
 __attribute__((interrupt))

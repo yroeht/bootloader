@@ -15,3 +15,11 @@ int strncmp(const char *a, const char *b, int n)
 	}
 	return 0;
 }
+
+int strlen(const char *s)
+{
+	int len = 1;
+	while (*s++)
+		++len;
+	return len - 1;
+}

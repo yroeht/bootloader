@@ -21,6 +21,7 @@ C_SOURCE=${C_LIB_SOURCES} \
 	 ata.c \
 	 fat.c \
 	 string.c \
+	 shell.c \
 
 ASM_SOURCE=boot.S \
 	   pmode.S \
