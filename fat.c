@@ -40,11 +40,16 @@ static void print_dirent(const struct fat_directory *dir)
 	printk(" %x %d B", dir->cluster_lo, dir->file_size);
 }
 
+static char bootrecord_bytes[SECTOR_SIZE];
+
 static struct boot_record *br;
 
-static void load_bootrecord(char* addr_fs)
+static void load_bootrecord(void)
 {
-	br = (struct boot_record *)addr_fs;
+	unsigned partition_start_sector = FS_OFFSET / SECTOR_SIZE;
+
+	ata_lba_read(partition_start_sector, 1, (void*)bootrecord_bytes);
+	br = (struct boot_record *)bootrecord_bytes;
 }
 
 static unsigned char fat[SECTOR_SIZE];
@@ -73,9 +78,7 @@ static void load_rootdir(void)
 
 void fs_init(void)
 {
-	extern long __start_of_mem;
-
-	load_bootrecord(FS_OFFSET + (char*)&__start_of_mem);
+	load_bootrecord();
 	load_fat();
 	load_rootdir();
 }
