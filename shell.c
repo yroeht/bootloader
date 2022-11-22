@@ -19,7 +19,11 @@ static struct command commands[42] = {
 	{
 		.name = "cat",
 		.function = print_file
-	}
+	},
+	{
+		.name = "cd",
+		.function = change_dir
+	},
 };
 
 static char buffer[20];
@@ -45,6 +49,7 @@ void shell_feed_char(char c)
 	buffer[buffer_idx++] = c;
 	if ('\n' != c)
 		return;
+	buffer[buffer_idx - 2] = 0;
 	for (struct command* cmdp = commands; cmdp->name; cmdp++)
 		if (0 == strncmp(cmdp->name, buffer, strlen(cmdp->name)))
 		{

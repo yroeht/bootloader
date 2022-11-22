@@ -63,5 +63,6 @@ union fat_date
 };
 
 void fs_init(void);
-void print_dir(void *param);
+void print_dir(const char *param);
 void print_file(const char *filename);
+void change_dir(const char *dirname);

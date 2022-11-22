@@ -62,9 +62,9 @@ static void load_fat(void)
 	ata_lba_read(fat_base, 1, (void*)fat);
 }
 
-static unsigned char rootdir[SECTOR_SIZE];
+static unsigned char dir_bytes[SECTOR_SIZE];
 
-static struct fat_directory *dir = (struct fat_directory*)rootdir;
+static struct fat_directory *dir = (struct fat_directory*)dir_bytes;
 
 static void load_rootdir(void)
 {
@@ -83,7 +83,7 @@ void fs_init(void)
 	load_rootdir();
 }
 
-void print_dir(void *param)
+void print_dir(const char *param)
 {
 	(void)param;
 	for (int i = 0; i < br->number_of_root_directory_entries; ++i)
@@ -109,21 +109,18 @@ static struct fat_directory *find_file(const char *filename)
 	return 0;
 }
 
-void print_file(const char *filename)
+static void load(struct fat_directory *file, void *dst)
 {
-	struct fat_directory *file = find_file(filename);
-	if (!file)
-		return;
 	unsigned active_cluster = file->cluster_lo;
 	unsigned fat_offset = active_cluster + (active_cluster / 2);
 	unsigned int ent_offset = fat_offset % SECTOR_SIZE;
 	unsigned short table_value = *(unsigned short*)&fat[ent_offset];
+
 	if(active_cluster & 0x0001)
 		table_value = table_value >> 4;
 	else
 		table_value = table_value & 0x0FFF;
 
-	unsigned char filecontent[SECTOR_SIZE];
 	unsigned partition_start_sector = FS_OFFSET / SECTOR_SIZE;
 	unsigned fat_base = partition_start_sector + br->number_of_reserved_sectors;
 	unsigned first_fat_sector = fat_base
@@ -135,8 +132,32 @@ void print_file(const char *filename)
 		+ (active_cluster - 2)
 			* br->number_of_sectors_per_cluster;
 
-	ata_lba_read(file_sector, 1, (void*)filecontent);
+	ata_lba_read(file_sector, 1, (void*)dst);
+}
+
+void print_file(const char *filename)
+{
+	unsigned char filecontent[SECTOR_SIZE];
+	struct fat_directory *file = find_file(filename);
+
+	if (!file)
+	{
+		printk("file <%s> not found.\r\n", filename);
+		return;
+	}
+	load(file, filecontent);
 	for (int i = 0; i < file->file_size; ++i)
 		printk("%c", filecontent[i]);
 	printk("\r\n");
+}
+
+void change_dir(const char *dirname)
+{
+	struct fat_directory *file = find_file(dirname);
+	if (!file)
+	{
+		printk("directory <%s> not found.\r\n", dirname);
+		return;
+	}
+	load(file, dir_bytes);
 }
