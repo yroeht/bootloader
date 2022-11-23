@@ -28,15 +28,14 @@ void putc(char c)
 		framebuffer_idx += columns;
 		return;
 	}
-	framebuffer[framebuffer_idx] = (framebuffer_color.byte << 8) | c;
 
 	// if this newline is out of screen, scroll
 	if (framebuffer_idx / columns >= rows) {
-		for (int i = 0; i < framebuffer_idx; ++i) {
+		for (int i = 0; i < framebuffer_idx; ++i)
 			framebuffer[i] = framebuffer[i + columns];
-		}
 		framebuffer_idx -= columns;
 	}
+	framebuffer[framebuffer_idx] = (framebuffer_color.byte << 8) | c;
 	framebuffer_idx++;
 }
 
