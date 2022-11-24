@@ -2,6 +2,7 @@
 #include "string.h"
 #include "fat.h"
 #include "lib/print.h"
+#include "putc.h"
 
 const char *prompt = "shell> ";
 
@@ -11,7 +12,7 @@ struct command
 	void (*function)(const char *param);
 };
 
-static struct command commands[42] = {
+static struct command commands[] = {
 	{
 		.name = "ls",
 		.function = print_dir
@@ -82,4 +83,15 @@ void shell_move_cursor(int n)
 {
 	move_cursor(n);
 	buffer_idx += n;
+
+}
+void shell_backspace(void)
+{
+	if (!buffer_idx)
+		return;
+	buffer_idx--;
+	buffer[buffer_idx] = 0;
+	move_cursor(-1);
+	putc(' ');
+	move_cursor(-1);
 }

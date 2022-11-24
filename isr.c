@@ -148,6 +148,7 @@ void keyboard_handler(struct interrupt_frame *frame)
 		case 0x1b: process_key('}'); return;
 		case 0x2b: process_key('\\'); return;
 		case 0x0f: process_key('\t'); return;
+		case 0x0e: shell_backspace(); return;
 	}
 	printk("%s key code %p\r\n", __func__, keycode);
 }
