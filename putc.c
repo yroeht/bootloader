@@ -3,6 +3,10 @@
 int framebuffer_idx __attribute__((section(".bits16.data")));
 union colorcode framebuffer_color;
 
+static const int columns = 80;
+static const int rows = 24;
+static short * const framebuffer = (short *) 0xb8000;
+
 void reset_colorcode(void)
 {
 	framebuffer_color.fg = color_white;
@@ -11,12 +15,18 @@ void reset_colorcode(void)
 	framebuffer_color.blink = 0;
 }
 
+static void scroll(void)
+{
+	// if this newline is out of screen, scroll
+	if (framebuffer_idx / columns >= rows) {
+		for (int i = 0; i < framebuffer_idx; ++i)
+			framebuffer[i] = framebuffer[i + columns];
+		framebuffer_idx -= columns;
+	}
+}
+
 void putc(char c)
 {
-	static short * const framebuffer = (short *) 0xb8000;
-	const int columns = 80;
-	const int rows = 24;
-
 	if (!c)
 		return;
 
@@ -29,13 +39,12 @@ void putc(char c)
 		return;
 	}
 
-	// if this newline is out of screen, scroll
-	if (framebuffer_idx / columns >= rows) {
-		for (int i = 0; i < framebuffer_idx; ++i)
-			framebuffer[i] = framebuffer[i + columns];
-		framebuffer_idx -= columns;
-	}
+	scroll();
 	framebuffer[framebuffer_idx] = (framebuffer_color.byte << 8) | c;
 	framebuffer_idx++;
 }
 
+void move_cursor(int n)
+{
+	framebuffer_idx += n;
+}

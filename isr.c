@@ -27,8 +27,6 @@ void interrupt_handler##n(struct interrupt_frame *frame)       \
 
 #undef ISR
 
-#include "putc.h"
-
 static int shift_pressed;
 void process_key(char k)
 {
@@ -60,7 +58,10 @@ void process_key(char k)
 			case '\\': k = '|'; break;
 		}
 	}
-	putc(k);
+	if (k == '\t') {
+		shell_autocomplete();
+		return;
+	}
 	shell_feed_char(k);
 }
 
@@ -69,15 +70,29 @@ void keyboard_handler(struct interrupt_frame *frame)
 {
 	(void) frame;
 	int keycode = 0;
+	static int extended_pressed = 0;
+
 	asm volatile("inb $0x60, %%al" : : : "al");
 	asm volatile("mov %%al, %0" : "=m"(keycode));
 
 	pic_ack();
 
+	if (extended_pressed)
+	{
+		extended_pressed = 0;
+		switch (keycode)
+		{
+			case 0x4b: shell_move_cursor(-1); return;
+			case 0x4d: shell_move_cursor(1); return;
+		}
+		return;
+	}
+
 	switch (keycode)
 	{
 		case 0x2a: shift_pressed = 1; return;
 		case 0xaa: shift_pressed = 0; return;
+		case 0xe0: extended_pressed = 1; return;
 	}
 	// ignore non-modifier key release
 	if (keycode & 0x80)
@@ -132,6 +147,7 @@ void keyboard_handler(struct interrupt_frame *frame)
 		case 0x1a: process_key('{'); return;
 		case 0x1b: process_key('}'); return;
 		case 0x2b: process_key('\\'); return;
+		case 0x0f: process_key('\t'); return;
 	}
 	printk("%s key code %p\r\n", __func__, keycode);
 }

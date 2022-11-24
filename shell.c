@@ -46,6 +46,7 @@ void shell_feed_char(char c)
 {
 	if (buffer_idx >= sizeof buffer)
 		shell_reset();
+	putc(c);
 	buffer[buffer_idx++] = c;
 	if ('\n' != c)
 		return;
@@ -59,3 +60,26 @@ void shell_feed_char(char c)
 	shell_reset();
 }
 
+static char *get_last_token(void)
+{
+	for (unsigned i = buffer_idx - 1; i; --i)
+		if (buffer[i] == ' ')
+			return &buffer[i + 1];
+	return buffer;
+}
+
+void shell_autocomplete(void)
+{
+	char *last_token = get_last_token();
+	struct fat_directory *entry = find_starts_with(last_token);
+
+	shell_move_cursor(last_token - buffer - buffer_idx);
+	for (unsigned i = 0; i < sizeof entry->filename; ++i)
+		shell_feed_char(entry->filename[i]);
+}
+
+void shell_move_cursor(int n)
+{
+	move_cursor(n);
+	buffer_idx += n;
+}

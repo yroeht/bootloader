@@ -98,15 +98,7 @@ void print_dir(const char *param)
 
 static struct fat_directory *find_file(const char *filename)
 {
-	for (int i = 0; i < br->number_of_root_directory_entries; ++i)
-	{
-		struct fat_directory *dirp = dir + i;
-		if (!*dirp->filename)
-			break;
-		if (!strncmp(dirp->filename, filename, sizeof dirp->filename))
-			return dirp;
-	}
-	return 0;
+	return find_starts_with(filename);
 }
 
 static void load(struct fat_directory *file, void *dst)
@@ -138,7 +130,7 @@ static void load(struct fat_directory *file, void *dst)
 void print_file(const char *filename)
 {
 	unsigned char filecontent[SECTOR_SIZE];
-	struct fat_directory *file = find_file(filename);
+	struct fat_directory *file = find_starts_with(filename);
 
 	if (!file)
 	{
@@ -160,4 +152,17 @@ void change_dir(const char *dirname)
 		return;
 	}
 	load(file, dir_bytes);
+}
+
+struct fat_directory *find_starts_with(const char *prefix)
+{
+	for (int i = 0; i < br->number_of_root_directory_entries; ++i)
+	{
+		struct fat_directory *dirp = dir + i;
+		if (!*dirp->filename)
+			break;
+		if (!strncmp(dirp->filename, prefix, strlen(prefix)))
+			return dirp;
+	}
+	return 0;
 }

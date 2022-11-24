@@ -2,6 +2,7 @@
 
 #include "stdint.h"
 
+void move_cursor(int n);
 void putc(char c);
 void reset_colorcode(void);
 
