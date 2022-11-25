@@ -74,6 +74,9 @@ void shell_autocomplete(void)
 	char *last_token = get_last_token();
 	struct fat_directory *entry = find_starts_with(last_token);
 
+	if (!entry)
+		return;
+
 	shell_move_cursor(last_token - buffer - buffer_idx);
 	for (unsigned i = 0; i < sizeof entry->filename; ++i)
 		shell_feed_char(entry->filename[i]);
