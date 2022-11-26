@@ -4,6 +4,8 @@
 #include "lib/print.h"
 #include "putc.h"
 
+#define SIZEOF_ARRAY(arr) (sizeof arr / sizeof *arr)
+
 const char *prompt = "shell> ";
 
 struct command
@@ -52,10 +54,10 @@ void shell_feed_char(char c)
 	if ('\n' != c)
 		return;
 	buffer[buffer_idx - 2] = 0;
-	for (struct command* cmdp = commands; cmdp->name; cmdp++)
-		if (0 == strncmp(cmdp->name, buffer, strlen(cmdp->name)))
+	for (unsigned i = 0; i < SIZEOF_ARRAY(commands); ++i)
+		if (0 == strncmp(commands[i].name, buffer, strlen(commands[i].name)))
 		{
-			cmdp->function(buffer + strlen(cmdp->name) + 1);
+			commands[i].function(buffer + strlen(commands[i].name) + 1);
 			break;
 		}
 	shell_reset();
