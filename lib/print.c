@@ -21,14 +21,14 @@ static void print_string(const char *s, int min, int max)
 		putc(' ');
 }
 
-static void print_base(int x, unsigned b, int min, int max)
+static void print_base(int x, unsigned b, int min, int max, int sign)
 {
 	char stack[34];
 	char sym[62] =
 		"0123456789"
 		"abcdefghijklmnopqrstuvwxyz"
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	char negative = x < 0;
+	char negative = sign && x < 0;
 	if (negative)
 		x = -x;
 
@@ -58,7 +58,7 @@ static void print_hex(int x)
 {
 	putc('0');
 	putc('x');
-	print_base(x, 16, 8, 8);
+	print_base(x, 16, 8, 8, 0);
 }
 
 void printk(const char *fmt, ...)
@@ -68,6 +68,7 @@ void printk(const char *fmt, ...)
 	int reading_min = 0;
 	int max;
 	int min;
+	int sign;
 	va_start(ap, fmt);
 	while (*fmt)
 	{
@@ -87,11 +88,17 @@ void printk(const char *fmt, ...)
 			else if ('p' == *fmt)
 				print_hex(va_arg(ap, int));
 			else if ('d' == *fmt)
-				print_base(va_arg(ap, int), 10, min ? min : 1, max ? max : 32);
+				print_base(va_arg(ap, int), 10, min ? min : 1, max ? max : 32, sign);
 			else if ('x' == *fmt)
-				print_base(va_arg(ap, int), 16, min ? min : 1, max ? max : 32);
+				print_base(va_arg(ap, int), 16, min ? min : 1, max ? max : 32, sign);
 			else if ('c' == *fmt)
 				putc(va_arg(ap, int));
+			else if ('u' == *fmt)
+			{
+				sign = 0;
+				++fmt;
+				continue;
+			}
 			else if ('%' == *fmt)
 				putc('%');
 			else if ('0' <= *fmt && *fmt <= '9')
@@ -118,6 +125,7 @@ void printk(const char *fmt, ...)
 			possible_arg = 1;
 			max = 0;
 			min = 0;
+			sign = 1;
 		}
 		else
 			putc(*fmt);
