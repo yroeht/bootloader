@@ -61,9 +61,9 @@ clean:
 
 ${FS_IMAGE}: app
 	rm -f ${FS_IMAGE}
-	mkfs.fat -F12 -C ${FS_IMAGE} 64
-	mcopy -i ${FS_IMAGE} fs/* ::
-	mcopy -i ${FS_IMAGE} app/*.elf ::
+	mkfs.fat -v -F12 -C ${FS_IMAGE} 128
+	mcopy -m -i ${FS_IMAGE} fs/* ::
+	mcopy -m -i ${FS_IMAGE} app/*.elf ::
 	mdir -i ${FS_IMAGE} ::
 
-.PHONY: ${FS_IMAGE} app
+.PHONY: ${FS_IMAGE} ${BOOT_IMAGE} app

@@ -52,7 +52,7 @@ static void load_bootrecord(void)
 	br = (struct boot_record *)bootrecord_bytes;
 }
 
-static unsigned char fat[SECTOR_SIZE];
+static char fat[SECTOR_SIZE];
 
 static void load_fat(void)
 {
@@ -62,7 +62,7 @@ static void load_fat(void)
 	ata_lba_read(fat_base, 1, (void*)fat);
 }
 
-static unsigned char dir_bytes[SECTOR_SIZE];
+static char dir_bytes[SECTOR_SIZE];
 
 static struct fat_directory *dir = (struct fat_directory*)dir_bytes;
 
@@ -101,35 +101,38 @@ static struct fat_directory *find_file(const char *filename)
 	return find_starts_with(filename);
 }
 
-static void load(struct fat_directory *file, void *dst)
+static void load(struct fat_directory *file, char *dst)
 {
 	unsigned active_cluster = file->cluster_lo;
-	unsigned fat_offset = active_cluster + (active_cluster / 2);
-	unsigned int ent_offset = fat_offset % SECTOR_SIZE;
-	unsigned short table_value = *(unsigned short*)&fat[ent_offset];
-
-	if(active_cluster & 0x0001)
-		table_value = table_value >> 4;
-	else
-		table_value = table_value & 0x0FFF;
-
 	unsigned partition_start_sector = FS_OFFSET / SECTOR_SIZE;
 	unsigned fat_base = partition_start_sector + br->number_of_reserved_sectors;
 	unsigned first_fat_sector = fat_base
 		+ br->number_of_file_allocation_tables * br->number_of_sectors_per_fat;
-	unsigned file_sector = first_fat_sector
-		+ (br->number_of_root_directory_entries
-			* sizeof (struct fat_directory))
+	do {
+		unsigned fat_offset = active_cluster + (active_cluster / 2);
+		unsigned int ent_offset = fat_offset % SECTOR_SIZE;
+		unsigned short table_value = *(unsigned short*)&fat[ent_offset];
+
+		if(active_cluster & 0x0001)
+			table_value = table_value >> 4;
+		else
+			table_value = table_value & 0x0FFF;
+
+		unsigned file_sector = first_fat_sector
+			+ (br->number_of_root_directory_entries
+					* sizeof (struct fat_directory))
 			/ br->number_of_bytes_per_sector
-		+ (active_cluster - 2)
+			+ (active_cluster - 2)
 			* br->number_of_sectors_per_cluster;
 
-	ata_lba_read(file_sector, 1, (void*)dst);
+		ata_lba_read(file_sector, br->number_of_sectors_per_cluster, (void*)dst);
+		active_cluster = table_value;
+		dst += br->number_of_bytes_per_sector * br->number_of_sectors_per_cluster;
+	} while (active_cluster < 0xff8);
 }
 
 void print_file(const char *filename)
 {
-	unsigned char filecontent[SECTOR_SIZE];
 	struct fat_directory *file = find_starts_with(filename);
 
 	if (!file)
@@ -137,6 +140,8 @@ void print_file(const char *filename)
 		printk("file <%s> not found.\r\n", filename);
 		return;
 	}
+	char filecontent[file->file_size * 4];
+
 	load(file, filecontent);
 	for (int i = 0; i < file->file_size; ++i)
 		printk("%c", filecontent[i]);

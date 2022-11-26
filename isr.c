@@ -2,6 +2,7 @@
 #include "pic.h"
 #include "lib/print.h"
 #include "shell.h"
+#include "putc.h"
 
 __attribute__ ((interrupt))
 void default_interrupt_handler(struct interrupt_frame *frame)
