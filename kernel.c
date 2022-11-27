@@ -7,7 +7,8 @@
 #include "putc.h"
 #include "shell.h"
 
-extern short number_extra_sectors;
+short number_extra_sectors __attribute__((section(".bits16.data"))) = NUM_SECTORS;
+
 extern long __start_of_mem;
 
 #define MAGIC_CHECK 0x12345678

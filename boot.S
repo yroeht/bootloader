@@ -84,9 +84,6 @@ sectors_per_cylinder:
 	.long 0
 es_step:
 	.short 0x1000
-	.global number_extra_sectors
-number_extra_sectors:
-	.short 200
 	.globl drive_num
 drive_num:
 	.short 0
