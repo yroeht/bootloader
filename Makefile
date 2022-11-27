@@ -22,6 +22,7 @@ C_SOURCE=${C_LIB_SOURCES} \
 	 fat.c \
 	 string.c \
 	 shell.c \
+	 paging.c \
 
 ASM_SOURCE=boot.S \
 	   pmode.S \
