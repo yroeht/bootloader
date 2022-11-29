@@ -4,7 +4,6 @@
 pmode_switch:
 	# save the cursor position to resume there in 32 bits
 	call cursor_save
-	call paging_setup
 	call init_gdt
 
 	.code32

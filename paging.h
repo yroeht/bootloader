@@ -4,16 +4,16 @@ union page_directory_entry
 {
 	struct
 	{
-		char present : 1;
-		char write : 1;
-		char supervisor : 1;
-		char write_through : 1;
-		char cache_disable : 1;
-		char accessed : 1;
-		char available0 : 1;
-		char page_size_4M : 1;
-		char available : 3;
-		char page_attribute_table : 1;
+		unsigned present : 1;
+		unsigned write : 1;
+		unsigned supervisor : 1;
+		unsigned write_through : 1;
+		unsigned cache_disable : 1;
+		unsigned accessed : 1;
+		unsigned available0 : 1;
+		unsigned page_size_4M : 1;
+		unsigned available : 3;
+		unsigned page_attribute_table : 1;
 		long address_bits_31_12 : 20;
 	} __attribute__((packed));
 	long bytes;
@@ -23,19 +23,20 @@ union page_table_entry
 {
 	struct
 	{
-		char present : 1;
-		char write : 1;
-		char supervisor : 1;
-		char write_through : 1;
-		char cache_disable : 1;
-		char accessed : 1;
-		char dirty : 1;
-		char page_attribute : 1;
-		char global : 1;
-		char available : 3;
+		unsigned present : 1;
+		unsigned write : 1;
+		unsigned supervisor : 1;
+		unsigned write_through : 1;
+		unsigned cache_disable : 1;
+		unsigned accessed : 1;
+		unsigned dirty : 1;
+		unsigned page_attribute : 1;
+		unsigned global : 1;
+		unsigned available : 3;
 		long address_bits_31_12 : 20;
 	} __attribute__((packed));
 	long bytes;
 };
 
 void paging_setup(void);
+void paging_dump(const char *);

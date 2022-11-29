@@ -1,4 +1,7 @@
 #include "paging.h"
+#include "lib/print.h"
+
+#define SIZEOF_ARRAY(arr) (sizeof arr / sizeof *arr)
 
 static union page_directory_entry pd[1024] __attribute__((aligned(4096)));
 static union page_table_entry pt[1024] __attribute__((aligned(4096)));
@@ -14,28 +17,94 @@ static void paging_enable(void)
 
 void paging_setup(void)
 {
-	//set each entry to not present
 	int i;
 	for(i = 0; i < 1024; i++)
 	{
-		// This sets the following flags to the pages:
-		//   Supervisor: Only kernel-mode can access them
-		//   Write Enabled: It can be both read from and written to
-		//   Not Present: The page table is not present
-		pd[i].bytes = 0x00000002;
+		pd[i].bytes = 0;
+		pd[i].write = 1;
 	}
 
-	// i holds the physical address where we want to start mapping these pages to.
-	// in this case, we want to map these pages to the very beginning of memory.
-	//we will fill all 1024 entries in the table, mapping 4 megabytes
 	for(i = 0; i < 1024; i++)
 	{
-		// As the address is page aligned, it will always leave 12 bits zeroed.
-		// Those bits are used by the attributes ;)
-		pt[i].bytes = (i * 0x1000) | 3; // attributes: supervisor level, read/write, present.
+		pd[i].bytes = 0;
+		pt[i].address_bits_31_12 = i;
+		pt[i].supervisor = 1;
+		pt[i].write = 1;
 	}
 
 	pd[0].bytes = ((unsigned)pt) | 3;
 
-	paging_enable();
+	//paging_enable();
+}
+
+void paging_dump(const char *unused)
+{
+	(void) unused;
+
+	for (unsigned pdi = 0; pdi < SIZEOF_ARRAY(pd); ++pdi)
+	{
+		if (!pd[pdi].present)
+			continue;
+		printk("%p ", pd[pdi].address_bits_31_12 << 12);
+		if (pd[pdi].write)
+			printk("write ");
+		if (pd[pdi].supervisor)
+			printk("supervisor ");
+		if (pd[pdi].write_through)
+			printk("write-through ");
+		if (pd[pdi].cache_disable)
+			printk("cache-disable ");
+		if (pd[pdi].accessed)
+			printk("accessed ");
+		if (pd[pdi].available0)
+			printk("available0 ");
+		if (pd[pdi].page_size_4M)
+			printk("page-size-4M ");
+		if (pd[pdi].available)
+			printk("available ");
+		if (pd[pdi].page_attribute_table)
+			printk("page-attribute-table" );
+		printk("\r\n");
+
+		union page_table_entry *pt = (union page_table_entry *)
+			(pd[pdi].address_bits_31_12 << 12);
+
+		long attributes_save = pt[0].bytes & 0xfff;
+		long first_address = pt[0].address_bits_31_12 << 12;
+		for (unsigned pti = 1; pti < 1024; ++pti)
+		{
+			long attributes = pt[pti].bytes & 0xfff;
+			long cur_address = pt[pti].address_bits_31_12 << 12;
+
+			if (pti < 1023 && attributes == attributes_save)
+				continue;
+
+			printk("    %p -> %p ", first_address, cur_address);
+			if (pt[pti].present)
+				printk("present ");
+			if (pt[pti].write)
+				printk("write ");
+			if (pt[pti].supervisor)
+				printk("supervisor ");
+			if (pt[pti].write_through)
+				printk("write-through ");
+			if (pt[pti].cache_disable)
+				printk("cache-disable ");
+			if (pt[pti].accessed)
+				printk("accessed ");
+			if (pt[pti].dirty)
+				printk("dirty ");
+			if (pt[pti].page_attribute)
+				printk("page-attribute" );
+			if (pt[pti].global)
+				printk("global ");
+			if (pt[pti].available)
+				printk("available ");
+
+			printk("\r\n");
+
+			attributes_save = attributes;
+			first_address = cur_address;
+		}
+	}
 }

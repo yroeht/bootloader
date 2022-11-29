@@ -3,6 +3,7 @@
 #include "fat.h"
 #include "lib/print.h"
 #include "putc.h"
+#include "paging.h"
 
 #define SIZEOF_ARRAY(arr) (sizeof arr / sizeof *arr)
 
@@ -26,6 +27,10 @@ static struct command commands[] = {
 	{
 		.name = "cd",
 		.function = change_dir
+	},
+	{
+		.name = "mem",
+		.function = paging_dump
 	},
 };
 

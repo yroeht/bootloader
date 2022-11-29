@@ -20,6 +20,7 @@ short sector[256];
 void kernel_entry(void)
 {
 	reset_colorcode();
+	paging_setup();
 	pic_init();
 	init_idt();
 	printk("Welcome to 32 bits Protected Mode!\r\n");
