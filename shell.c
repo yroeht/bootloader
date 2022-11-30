@@ -32,6 +32,10 @@ static struct command commands[] = {
 		.name = "mem",
 		.function = paging_dump
 	},
+	{
+		.name = "phys",
+		.function = paging_virtstr_to_phys
+	},
 };
 
 static char buffer[20];
