@@ -11,7 +11,7 @@ static void paging_enable(void)
 	asm volatile("mov %0, %%cr3" : : "r"(pd));
 
 	asm volatile("mov %%cr0, %%eax" : : : "eax");
-	asm volatile("or $0x80000000, %%eax" : : : "eax");
+	//asm volatile("or $0x80000000, %%eax" : : : "eax");
 	asm volatile("mov %%eax, %%cr0" :);
 }
 
@@ -34,18 +34,24 @@ void paging_setup(void)
 
 	pd[0].bytes = ((unsigned)pt) | 3;
 
-	//paging_enable();
+	paging_enable();
 }
 
 void paging_dump(const char *unused)
 {
 	(void) unused;
 
+	long cr3;
+	asm volatile("mov %%cr3, %%eax" : : : "eax");
+	asm volatile("mov %%eax, %0" : "=m"(cr3));
+
+	printk("cr3 %p\r\n", cr3);
+
 	for (unsigned pdi = 0; pdi < SIZEOF_ARRAY(pd); ++pdi)
 	{
 		if (!pd[pdi].present)
 			continue;
-		printk("%p ", pd[pdi].address_bits_31_12 << 12);
+		printk("dir %p ", &pd[pdi]);
 		if (pd[pdi].write)
 			printk("write ");
 		if (pd[pdi].supervisor)
@@ -68,6 +74,8 @@ void paging_dump(const char *unused)
 
 		union page_table_entry *pt = (union page_table_entry *)
 			(pd[pdi].address_bits_31_12 << 12);
+
+		printk("  table %p\r\n", pt);
 
 		long attributes_save = pt[0].bytes & 0xfff;
 		long first_address = pt[0].address_bits_31_12 << 12;
