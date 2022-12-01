@@ -3,17 +3,19 @@
 
 #define SIZEOF_ARRAY(arr) (sizeof arr / sizeof *arr)
 
-static union page_directory_entry pd[1024] __attribute__((aligned(4096)));
+#define PAGE_SIZE 4096
+
+static union page_directory_entry pd[1024] __attribute__((aligned(PAGE_SIZE)));
 
 extern int __end_of_mem;
 extern int __start_of_mem;
 
 #define PHYS_MEM_AVAILABLE 0x10000000 // 8M
-#define PAGE_FRAMES (PHYS_MEM_AVAILABLE / 4096)
+#define PAGE_FRAMES (PHYS_MEM_AVAILABLE / PAGE_SIZE)
 
 static char pf[PAGE_FRAMES];
 
-int pf_alloc(void)
+static int pf_alloc(void)
 {
 	for (int i = 0; i < PAGE_FRAMES; ++i)
 	{
@@ -21,21 +23,22 @@ int pf_alloc(void)
 		{
 			pf[i] = 1;
 			char *pfp = (char *)(i << 12);
-			for (int j = 0; j < 4096; ++j)
+			for (int j = 0; j < PAGE_SIZE; ++j)
 				pfp[j] = 0;
+			map((int)pfp, (int)pfp, PAGE_SIZE);
 			return i;
 		}
 	}
 	return -1;
 }
 
-union page_table_entry *pt_alloc(void)
+static union page_table_entry *pt_alloc(void)
 {
 	int i = pf_alloc();
 
 	if (i < 0)
 		return 0;
-	return (union page_table_entry *)(i * 4096);
+	return (union page_table_entry *)(i * PAGE_SIZE);
 }
 
 static void paging_enable(void)
@@ -43,11 +46,11 @@ static void paging_enable(void)
 	asm volatile("mov %0, %%cr3" : : "r"(pd));
 
 	asm volatile("mov %%cr0, %%eax" : : : "eax");
-	//asm volatile("or $0x80000000, %%eax" : : : "eax");
+	asm volatile("or $0x80000000, %%eax" : : : "eax");
 	asm volatile("mov %%eax, %%cr0" :);
 }
 
-static void map(int virt, int phys, int size)
+void map(int virt, int phys, int size)
 {
 	int pdi = virt >> 22;
 	int pti = (virt >> 12) & 0x3ff;
@@ -62,7 +65,7 @@ static void map(int virt, int phys, int size)
 		pd[pdi].address_bits_31_12 = (int)ptp >> 12;
 	}
 
-	for (int i = 0; i < 1024 && i * 4096 < size; ++i)
+	for (int i = 0; i < 1024 && i * PAGE_SIZE < size; ++i)
 	{
 		ptp[pti + i].present = 1;
 		ptp[pti + i].write = 1;
@@ -78,17 +81,26 @@ void paging_setup(void)
 
 	for (int i = 0; i < PAGE_FRAMES; ++i)
 		pf[i] = 0;
-	for (int i = 0; i < 1024; i++)
-		pd[i].bytes = 0;
-
 	for (int i = mapped_start_page; i < mapped_end_page; ++i)
 		pf[i] = 1;
 
-	int mapped_start_address = mapped_start_page * 4096;
-	int mapped_size = (mapped_end_page - mapped_start_page) * 4096;
+	for (int i = 0; i < 1024; i++)
+		pd[i].bytes = 0;
 
+	static union page_table_entry pt[1024] __attribute__((aligned(PAGE_SIZE)));
+
+	pd[0].present = 1;
+	pd[0].address_bits_31_12 = (int)pt >> 12;
+
+	int mapped_start_address = mapped_start_page * PAGE_SIZE;
+	int mapped_size = (mapped_end_page - mapped_start_page) * PAGE_SIZE;
+
+	// The OS's intially loaded image
 	map(mapped_start_address, mapped_start_address, mapped_size);
+	// The VGA framebuffer
 	map(0xb8000, 0xb8000, 80 * 24 * 2);
+	// The stack
+	map(0xf00000, 0xf00000, 0x100000);
 
 	paging_enable();
 }
@@ -96,8 +108,8 @@ void paging_setup(void)
 void paging_dump(const char *unused)
 {
 	(void) unused;
-
 	long cr3;
+
 	asm volatile("mov %%cr3, %%eax" : : : "eax");
 	asm volatile("mov %%eax, %0" : "=m"(cr3));
 
@@ -107,7 +119,7 @@ void paging_dump(const char *unused)
 	{
 		if (!pd[pdi].present)
 			continue;
-		printk("dir %p ", &pd[pdi]);
+		printk("dir %p pdi %d ", &pd[pdi], pdi);
 		if (pd[pdi].write)
 			printk("write ");
 		if (pd[pdi].supervisor)
@@ -189,6 +201,7 @@ void paging_dump(const char *unused)
 static long atoi(const char *s, int b)
 {
 	long ret = 0;
+
 	for (; *s; ++s)
 	{
 		if (*s == ' ')

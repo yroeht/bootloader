@@ -19,9 +19,9 @@ short sector[256];
 void kernel_entry(void)
 {
 	reset_colorcode();
-	paging_setup();
 	pic_init();
 	init_idt();
+	paging_setup();
 	printk("Welcome to 32 bits Protected Mode!\r\n");
 	printk("Loaded %d extra sectors after bootsector.\r\n",
 			number_extra_sectors);
