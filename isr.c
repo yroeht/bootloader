@@ -174,3 +174,15 @@ void syscall_handler(struct interrupt_frame *frame)
 			break;
 	}
 }
+
+__attribute__((interrupt))
+void page_fault_handler(struct interrupt_frame *frame)
+{
+	(void) frame;
+	int cr2;
+
+	asm volatile("mov %%cr2, %0" : "=r"(cr2));
+	printk("#PF Page Fault, faulting page %p\r\n");
+	for (;;)
+		;
+}

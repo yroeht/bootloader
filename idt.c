@@ -40,6 +40,16 @@ void init_idt(void)
 #include "isr-list.inc"
 
 #undef ISR
+	idt[14].offset_lo =
+		(int)page_fault_handler & 0xffff;
+	idt[14].segment_selector = kernel_cs;
+	idt[14].reserved0 = 0;
+	idt[14].gate_type = gate_type_32bit_int;
+	idt[14].reserved1 = 0;
+	idt[14].dpl = 0;
+	idt[14].present = 1;
+	idt[14].offset_hi =
+		(int)page_fault_handler >> 16;
 
 	idt[65].offset_lo =
 		(int)keyboard_handler & 0xffff;

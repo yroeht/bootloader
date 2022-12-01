@@ -22,3 +22,5 @@ void default_interrupt_handler(struct interrupt_frame *frame);
 void keyboard_handler(struct interrupt_frame *frame);
 
 void syscall_handler(struct interrupt_frame *frame);
+
+void page_fault_handler(struct interrupt_frame *frame);
