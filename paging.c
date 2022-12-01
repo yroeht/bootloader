@@ -5,17 +5,37 @@
 
 static union page_directory_entry pd[1024] __attribute__((aligned(4096)));
 
-#define PT_CNT 4
+extern int __end_of_mem;
+extern int __start_of_mem;
 
-static union page_table_entry pt_slab[PT_CNT][1024] __attribute__((aligned(4096)));
+#define PHYS_MEM_AVAILABLE 0x10000000 // 8M
+#define PAGE_FRAMES (PHYS_MEM_AVAILABLE / 4096)
 
-static int pt_slab_idx = 0;
+static char pf[PAGE_FRAMES];
 
-union page_table_entry *pt_slab_alloc(void)
+int pf_alloc(void)
 {
-	if (pt_slab_idx >= PT_CNT)
+	for (int i = 0; i < PAGE_FRAMES; ++i)
+	{
+		if (!pf[i])
+		{
+			pf[i] = 1;
+			char *pfp = (char *)(i << 12);
+			for (int j = 0; j < 4096; ++j)
+				pfp[j] = 0;
+			return i;
+		}
+	}
+	return -1;
+}
+
+union page_table_entry *pt_alloc(void)
+{
+	int i = pf_alloc();
+
+	if (i < 0)
 		return 0;
-	return pt_slab[pt_slab_idx++];
+	return (union page_table_entry *)(i * 4096);
 }
 
 static void paging_enable(void)
@@ -37,7 +57,7 @@ static void map(int virt, int phys, int size)
 		ptp = (union page_table_entry *)(pd[pdi].address_bits_31_12 << 12);
 	else
 	{
-		ptp = pt_slab_alloc();
+		ptp = pt_alloc();
 		pd[pdi].present = 1;
 		pd[pdi].address_bits_31_12 = (int)ptp >> 12;
 	}
@@ -53,14 +73,21 @@ static void map(int virt, int phys, int size)
 
 void paging_setup(void)
 {
+	int mapped_start_page = ((int)&__start_of_mem >> 12);
+	int mapped_end_page = ((int)&__end_of_mem >> 12) + 1;
+
+	for (int i = 0; i < PAGE_FRAMES; ++i)
+		pf[i] = 0;
 	for (int i = 0; i < 1024; i++)
 		pd[i].bytes = 0;
 
-	for (int slab = 0; slab < PT_CNT; ++ slab)
-		for (int i = 0; i < 1024; i++)
-			pt_slab[slab][i].bytes = 0;
+	for (int i = mapped_start_page; i < mapped_end_page; ++i)
+		pf[i] = 1;
 
-	map(0x7c00, 0x7c00, NUM_SECTORS * 512);
+	int mapped_start_address = mapped_start_page * 4096;
+	int mapped_size = (mapped_end_page - mapped_start_page) * 4096;
+
+	map(mapped_start_address, mapped_start_address, mapped_size);
 	map(0xb8000, 0xb8000, 80 * 24 * 2);
 
 	paging_enable();
@@ -74,7 +101,6 @@ void paging_dump(const char *unused)
 	asm volatile("mov %%cr3, %%eax" : : : "eax");
 	asm volatile("mov %%eax, %0" : "=m"(cr3));
 
-	printk("allocated %d page tables\r\n", pt_slab_idx);
 	printk("cr3 %p\r\n", cr3);
 
 	for (unsigned pdi = 0; pdi < SIZEOF_ARRAY(pd); ++pdi)
@@ -152,6 +178,12 @@ void paging_dump(const char *unused)
 			range_start_phys = range_cur_phys;
 		}
 	}
+
+	int pf_allocated = 0;
+	for (int i = 0; i < PAGE_FRAMES; ++i)
+		if (pf[i])
+			++pf_allocated;
+	printk("page_frames allocated : %d/%d\r\n", pf_allocated, PAGE_FRAMES);
 }
 
 static long atoi(const char *s, int b)
@@ -196,3 +228,5 @@ int paging_virt_to_phys(int virt)
 
 	return phys;
 }
+
+

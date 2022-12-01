@@ -1,4 +1,4 @@
-NUM_SECTORS=200
+NUM_SECTORS=250
 SECTOR_SZ=512
 FS_OFFSET=$$((${NUM_SECTORS} * ${SECTOR_SZ}))
 COMMON_FLAGS=-fno-pie -Wall -Wextra -pedantic -fno-stack-protector -g -DFS_OFFSET=${FS_OFFSET} -Wno-builtin-declaration-mismatch -DNUM_SECTORS=${NUM_SECTORS}

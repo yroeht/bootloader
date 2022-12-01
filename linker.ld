@@ -26,4 +26,6 @@ SECTIONS
     {
         *(.end_of_elf*);
     }
+    . = ALIGN(4096);
+    __end_of_mem = .;
 }
