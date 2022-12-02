@@ -18,11 +18,14 @@ void reset_colorcode(void)
 static void scroll(void)
 {
 	// if this newline is out of screen, scroll
-	if (framebuffer_idx / columns >= rows) {
-		for (int i = 0; i < framebuffer_idx; ++i)
-			framebuffer[i] = framebuffer[i + columns];
-		framebuffer_idx -= columns;
-	}
+	if (framebuffer_idx / columns <= rows)
+		return;
+	for (int i = 0; i < columns * rows; ++i)
+		framebuffer[i] = framebuffer[i + columns];
+	for (int i = 0; i < columns; ++i)
+		framebuffer[rows * columns + i] =
+			(framebuffer_color.byte << 8) | ' ';
+	framebuffer_idx -= columns;
 }
 
 void putc(char c)
@@ -36,6 +39,7 @@ void putc(char c)
 	}
 	if ('\n' == c) {
 		framebuffer_idx += columns;
+		scroll();
 		return;
 	}
 
