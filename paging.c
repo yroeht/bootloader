@@ -17,7 +17,7 @@ static char pf[PAGE_FRAMES];
 
 static int pf_alloc(void)
 {
-	for (int i = 0; i < PAGE_FRAMES; ++i)
+	for (int i = 1; i < PAGE_FRAMES; ++i)
 	{
 		if (!pf[i])
 		{
