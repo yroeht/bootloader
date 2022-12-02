@@ -43,3 +43,6 @@ void paging_dump(const char *);
 void paging_virtstr_to_phys(const char *);
 int paging_virt_to_phys(int virt);
 void map(int virt, int phys, int size);
+void unmap(int virt, int size);
+void *alloc(int size);
+void free(void *ptr, int size);

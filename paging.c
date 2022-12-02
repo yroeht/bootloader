@@ -15,30 +15,33 @@ extern int __start_of_mem;
 
 static char pf[PAGE_FRAMES];
 
-static int pf_alloc(void)
+static int pf_alloc(int n)
 {
+	if (n <= 0)
+		return 0;
 	for (int i = 1; i < PAGE_FRAMES; ++i)
 	{
-		if (!pf[i])
-		{
-			pf[i] = 1;
-			char *pfp = (char *)(i << 12);
-			for (int j = 0; j < PAGE_SIZE; ++j)
-				pfp[j] = 0;
-			map((int)pfp, (int)pfp, PAGE_SIZE);
-			return i;
-		}
+		for (int j = i; j < i + n; ++j)
+			if (pf[j])
+				goto cont;
+		for (int j = i; j < i + n; ++j)
+			pf[j] = 1;
+		return i;
+cont:
+		continue;
 	}
 	return -1;
 }
 
 static union page_table_entry *pt_alloc(void)
 {
-	int i = pf_alloc();
+	int i = pf_alloc(1);
+	int address = i * PAGE_SIZE;
 
-	if (i < 0)
+	if (address < 0)
 		return 0;
-	return (union page_table_entry *)(i * PAGE_SIZE);
+	map(address, address, PAGE_SIZE);
+	return (union page_table_entry *)address;
 }
 
 static void paging_enable(void)
@@ -61,6 +64,8 @@ void map(int virt, int phys, int size)
 	else
 	{
 		ptp = pt_alloc();
+		for (int i = 0; i < PAGE_SIZE; ++i)
+			ptp[i].bytes = 0;
 		pd[pdi].present = 1;
 		pd[pdi].address_bits_31_12 = (int)ptp >> 12;
 	}
@@ -71,6 +76,29 @@ void map(int virt, int phys, int size)
 		ptp[pti + i].write = 1;
 		ptp[pti + i].supervisor = 1;
 		ptp[pti + i].address_bits_31_12 = (phys >> 12) + i;
+	}
+}
+
+void unmap(int virt, int size)
+{
+	int pdi = virt >> 22;
+	int pti = (virt >> 12) & 0x3ff;
+	int phys = paging_virt_to_phys(virt);
+	int pfi = phys / PAGE_SIZE;
+	union page_table_entry *ptp =
+		(union page_table_entry *)(pd[pdi].address_bits_31_12 << 12);
+
+	if (!pd[pdi].present)
+	{
+		printk("Error unmapping virt %p, pdi %d not present\r\n",
+				virt, pdi);
+		return;
+	}
+
+	for (int i = 0; i < 1024 && i * PAGE_SIZE < size; ++i)
+	{
+		ptp[pti + i].bytes = 0;
+		pf[pfi + i] = 0;
 	}
 }
 
@@ -242,4 +270,18 @@ int paging_virt_to_phys(int virt)
 	return phys;
 }
 
+void *alloc(int size)
+{
+	int phys = pf_alloc((size + PAGE_SIZE - 1) / PAGE_SIZE)
+		* PAGE_SIZE;
 
+	if (!phys)
+		return 0;
+	map(phys, phys, size);
+	return (void *)phys;
+}
+
+void free(void *ptr, int size)
+{
+	unmap((int)ptr, size);
+}

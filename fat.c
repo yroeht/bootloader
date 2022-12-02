@@ -2,6 +2,7 @@
 #include "lib/print.h"
 #include "ata.h"
 #include "string.h"
+#include "paging.h"
 
 #define SECTOR_SIZE 512
 
@@ -140,11 +141,14 @@ void print_file(const char *filename)
 		printk("file <%s> not found.\r\n", filename);
 		return;
 	}
-	char filecontent[file->file_size * 4];
+
+	char *filecontent = alloc(file->file_size * 4);
 
 	load(file, filecontent);
 	for (int i = 0; i < file->file_size; ++i)
 		printk("%c", filecontent[i]);
+
+	free(filecontent, file->file_size * 4);
 	printk("\r\n");
 }
 
