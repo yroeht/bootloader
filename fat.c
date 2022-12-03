@@ -126,6 +126,8 @@ static void load(struct fat_directory *file, char *dst)
 			+ (active_cluster - 2)
 			* br->number_of_sectors_per_cluster;
 
+		if (!active_cluster)
+			file_sector = first_fat_sector;
 		ata_lba_read(file_sector, br->number_of_sectors_per_cluster, (void*)dst);
 		active_cluster = table_value;
 		dst += br->number_of_bytes_per_sector * br->number_of_sectors_per_cluster;
