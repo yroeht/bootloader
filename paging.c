@@ -10,7 +10,7 @@ static union page_directory_entry pd[1024] __attribute__((aligned(PAGE_SIZE)));
 extern int __end_of_mem;
 extern int __start_of_mem;
 
-#define PHYS_MEM_AVAILABLE 0x10000000 // 8M
+#define PHYS_MEM_AVAILABLE 0x10000000 // 256M
 #define PAGE_FRAMES (PHYS_MEM_AVAILABLE / PAGE_SIZE)
 
 static char pf[PAGE_FRAMES];
