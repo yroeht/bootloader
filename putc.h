@@ -5,6 +5,8 @@
 void move_cursor(int n);
 void putc(char c);
 void reset_colorcode(void);
+int end_screen_reached(void);
+void screen_reset(void);
 
 enum color
 {

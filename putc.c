@@ -18,7 +18,7 @@ void reset_colorcode(void)
 static void scroll(void)
 {
 	// if this newline is out of screen, scroll
-	if (framebuffer_idx / columns <= rows)
+	if (!end_screen_reached())
 		return;
 	for (int i = 0; i < columns * rows; ++i)
 		framebuffer[i] = framebuffer[i + columns];
@@ -51,4 +51,16 @@ void putc(char c)
 void move_cursor(int n)
 {
 	framebuffer_idx += n;
+}
+
+int end_screen_reached(void)
+{
+	return (framebuffer_idx / columns > rows);
+}
+
+void screen_reset(void)
+{
+	for (int i = 0; i < columns * rows; ++i)
+		framebuffer[i] = ' ';
+	framebuffer_idx = 0;
 }

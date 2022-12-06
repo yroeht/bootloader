@@ -9,6 +9,35 @@
 
 const char *prompt = "shell> ";
 
+static volatile int waiting;
+
+static void wait(void)
+{
+	waiting = 1;
+	while (waiting)
+		continue;
+}
+
+static void shell_less(const char *filename)
+{
+	struct file fi = file_open(filename);
+	int to_displ = fi.size;
+	int i;
+
+	printk("\r\n");
+	for (i = 0; to_displ; ++i, to_displ--)
+	{
+		printk("%c", fi.data[i]);
+		if (!end_screen_reached())
+			continue;
+		printk("\r\n-- displaying %d / %d, press any key to continue.",
+				i, fi.size);
+		wait();
+		screen_reset();
+	}
+	printk("\r\n");
+}
+
 struct command
 {
 	const char *name;
@@ -36,6 +65,10 @@ static struct command commands[] = {
 		.name = "phys",
 		.function = paging_virtstr_to_phys
 	},
+	{
+		.name = "less",
+		.function = shell_less
+	},
 };
 
 static char buffer[20];
@@ -56,11 +89,16 @@ void shell_reset(void)
 
 void shell_feed_char(char c)
 {
+	waiting = 0;
 	if (buffer_idx >= sizeof buffer)
 		shell_reset();
 	putc(c);
 	buffer[buffer_idx++] = c;
-	if ('\n' != c)
+}
+
+void shell_process(void)
+{
+	if (buffer[buffer_idx - 1] != '\n')
 		return;
 	buffer[buffer_idx - 2] = 0;
 	for (unsigned i = 0; i < SIZEOF_ARRAY(commands); ++i)

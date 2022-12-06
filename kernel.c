@@ -47,5 +47,5 @@ void kernel_entry(void)
 	shell_reset();
 
 	for (;;)
-		continue;
+		shell_process();
 }

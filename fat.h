@@ -68,3 +68,12 @@ void print_file(const char *filename);
 void change_dir(const char *dirname);
 
 struct fat_directory *find_starts_with(const char *);
+
+struct file
+{
+	int size;
+	char *data;
+};
+
+struct file file_open(const char *filename);
+void file_close(struct file fi);

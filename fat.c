@@ -134,8 +134,14 @@ static void load(struct fat_directory *file, char *dst)
 	} while (active_cluster < 0xff8);
 }
 
-void print_file(const char *filename)
+void file_close(struct file fi)
 {
+	free(fi.data, fi.size * 4);
+}
+
+struct file file_open(const char *filename)
+{
+	struct file ret;
 	struct fat_directory *file = find_starts_with(filename);
 
 	if (!file)
@@ -144,14 +150,21 @@ void print_file(const char *filename)
 		return;
 	}
 
-	char *filecontent = alloc(file->file_size * 4);
+	ret.data = alloc(file->file_size * 4);
+	ret.size = file->file_size;
+	load(file, ret.data);
+	return ret;
+}
 
-	load(file, filecontent);
-	for (int i = 0; i < file->file_size; ++i)
-		printk("%c", filecontent[i]);
+void print_file(const char *filename)
+{
+	struct file fi = file_open(filename);
 
-	free(filecontent, file->file_size * 4);
+	for (int i = 0; i < fi.size; ++i)
+		printk("%c", fi.data[i]);
 	printk("\r\n");
+
+	file_close(fi);
 }
 
 void change_dir(const char *dirname)
