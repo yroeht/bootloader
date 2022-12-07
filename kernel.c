@@ -22,10 +22,6 @@ void kernel_entry(void)
 	pic_init();
 	init_idt();
 	paging_setup();
-	printk("Welcome to 32 bits Protected Mode!\r\n");
-	printk("Loaded %d extra sectors after bootsector.\r\n",
-			number_extra_sectors);
-	printk("%.*s %d %*.x %d\r\n", 4, "Teststring", 42, 8, 0x1234, 0);
 	if (magic_check != MAGIC_CHECK)
 	{
 		printk("Check of magic number failed, "
@@ -35,15 +31,10 @@ void kernel_entry(void)
 		for (;;)
 			continue;
 	}
-	printk("Magic check validated, ELF loaded until %p\r\n", &magic_check);
-	asm volatile ("int $0x1");
-	asm volatile ("int $0x81");
-
-	ata_lba_read(0, 1, sector);
-	printk("Magic according to ATA read of sector 0: %p\r\n", sector[255] & 0xffff);
 
 	fs_init();
 
+	screen_reset();
 	shell_reset();
 
 	for (;;)
